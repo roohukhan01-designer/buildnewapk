@@ -298,7 +298,7 @@ document.addEventListener('visibilitychange',()=>{try{if(document.hidden&&!expor
 <details class="acc"><summary>Music</summary><div><label class="f">Music</label><select id="mu"></select></div></details>
 <div class="actions"><button id="ex1">Export this clip</button><button class="pri" id="tpost">Next: post →</button></div>
 </div></div>
-<div class="card"><div class="cap2" style="margin-top:0">Audio waveform & clip timeline</div><p class="hint">Taller peaks mean louder audio. Orange blocks show your selected clips.</p><canvas class="curve" aria-label="Audio waveform with selected clips"></canvas><div class="row" style="justify-content:space-between;margin-top:7px"><span class="hint">Quiet</span><span class="hint">Loud</span><span class="hint">Video time</span></div></div></div></section>
+<div class="card"><div class="cap2" style="margin-top:0">Audio waveform & clip timeline</div><p class="hint">Taller peaks mean louder audio. Orange blocks show your selected clips.</p><canvas class="curve" aria-label="Audio waveform with selected clips"></canvas><div class="row" style="justify-content:space-between;margin-top:7px"><span class="hint">Quiet</span><span class="hint">Loud</span><span class="hint">Video time</span></div><label class="k" style="margin-top:9px"><input type="checkbox" id="beatMarkers" checked>Show estimated beat markers</label><p class="hint">Markers are estimated from sudden audio peaks. Check them by listening before making precise cuts.</p></div></div></section>
 
 <section class="view" id="v-sub" hidden><h2>Caption editor</h2><p>Fix wording and timing. Every change goes straight into the exported clips.</p>
 <div class="card"><div class="row"><button id="sub-imp">Import .srt / .vtt</button><button id="sub-exp">Export .srt</button><button id="sub-add">Add line at playhead</button></div>
@@ -581,11 +581,14 @@ $('#go').onclick=async()=>{if(S.busy||!S.file)return;
   step('rank','ok','Ranking clips: '+S.clips.length+' selected');bar(1);$('#alog').textContent=S.clips.length?'Done. Clips are ranked by score; reframing starts where the most motion happens.':'No clips could be selected.';S.sel=0;$('#tor').hidden=!S.clips.length;drawCurve();if(cfg.autoCap&&S.clips.length)await runCap(S.clips.map((_,i)=>i))
  }catch(e){$('#alog').textContent='Analysis failed: '+(e.message||e)+'. Try a different file.'}finally{S.busy=false}};
 $('#tor').onclick=()=>go('review');
+function detectBeatMarkers(data){if(data.length<8)return[];let mean=0;for(const v of data)mean+=v;mean/=data.length;let variance=0;for(const v of data)variance+=(v-mean)*(v-mean);const threshold=mean+Math.sqrt(variance/data.length)*.55;const minGap=Math.max(2,Math.round(data.length*.22/Math.max(1,S.dur)));const peaks=[];let last=-minGap;for(let i=1;i<data.length-1;i++){if(i-last<minGap)continue;const v=data[i];if(v>=threshold&&v>=data[i-1]&&v>data[i+1]){peaks.push(i/data.length);last=i}}return peaks}
 function drawCurve(){$('canvas.curve').forEach(c=>{const d=window.devicePixelRatio||1,W=c.width=Math.max(1,c.clientWidth*d),H=c.height=Math.max(1,c.clientHeight*d),x=c.getContext('2d');x.clearRect(0,0,W,H);const data=S.audioCurve.length?S.audioCurve:S.curve;if(!data.length)return;const n=data.length,bw=W/n,mid=H/2;
  S.clips.forEach((k,i)=>{x.fillStyle=i===S.sel?'rgba(255,143,63,.20)':'rgba(255,143,63,.09)';x.fillRect(k.s*bw,0,Math.max(1,(k.e-k.s)*bw),H)});
  x.strokeStyle='rgba(255,255,255,.18)';x.lineWidth=Math.max(1,d);x.beginPath();x.moveTo(0,mid);x.lineTo(W,mid);x.stroke();
- x.fillStyle='#5FA9B5';data.forEach((v,i)=>{const amp=Math.max(1,Math.min(H*.46,v*(H*.46))),px=i*bw+Math.max(0,bw*.5);x.fillRect(px,mid-amp,Math.max(1,bw*.72),amp);x.fillRect(px,mid,Math.max(1,bw*.72),amp)})})}
-addEventListener('resize',drawCurve);
+ x.fillStyle='#5FA9B5';data.forEach((v,i)=>{const amp=Math.max(1,Math.min(H*.46,v*(H*.46))),px=i*bw+Math.max(0,bw*.5);x.fillRect(px,mid-amp,Math.max(1,bw*.72),amp);x.fillRect(px,mid,Math.max(1,bw*.72),amp)});
+ if($('#beatMarkers')?.checked){x.save();x.strokeStyle='rgba(190,255,100,.9)';x.fillStyle='rgba(190,255,100,.95)';x.lineWidth=Math.max(1,d);x.setLineDash([3*d,3*d]);detectBeatMarkers(data).forEach(p=>{const px=p*W;x.beginPath();x.moveTo(px,2*d);x.lineTo(px,H-2*d);x.stroke();x.beginPath();x.arc(px,mid,2.6*d,0,Math.PI*2);x.fill()});x.restore()}
+ })}
+$('#beatMarkers').onchange=drawCurve;addEventListener('resize',drawCurve);
 /* audio graph */
 let AC,vg,mg,mon,dest,an,abuf,duckV=1;const level=()=>{if(!an)return 0;an.getByteTimeDomainData(abuf);let s=0;for(const v of abuf){const d=(v-128)/128;s+=d*d}return Math.sqrt(s/abuf.length)};const mel=new Audio();mel.loop=true;
 async function audio(){if(!AC){AC=new(window.AudioContext||webkitAudioContext)();const vs=AC.createMediaElementSource(vid);vg=AC.createGain();vs.connect(vg);an=AC.createAnalyser();an.fftSize=512;abuf=new Uint8Array(512);vg.connect(an);mon=AC.createGain();dest=AC.createMediaStreamDestination();vg.connect(mon);vg.connect(dest);mon.connect(AC.destination);const ms=AC.createMediaElementSource(mel);mg=AC.createGain();ms.connect(mg);mg.connect(mon);mg.connect(dest)}await AC.resume()}
