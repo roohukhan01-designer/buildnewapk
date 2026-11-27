@@ -279,7 +279,7 @@ final class ClipExporter {
                             .build());
                 }
                 seqs.add(new EditedMediaItemSequence(ImmutableList.copyOf(shots)));
-                seqs.add(new EditedMediaItemSequence(ImmutableList.of(new EditedMediaItem.Builder(mi).setRemoveVideo(true).setEffects(new Effects(ImmutableList.<AudioProcessor>of(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, dur, false)), ImmutableList.<Effect>of())).build())));
+                seqs.add(new EditedMediaItemSequence(ImmutableList.of(new EditedMediaItem.Builder(mi).setRemoveVideo(true).setEffects(new Effects(ImmutableList.<AudioProcessor>of(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, dur, false), spec.optBoolean("voiceEnhance", false) ? new VoiceClarityProcessor() : null), ImmutableList.<Effect>of())).build())));
             } else if (ramp != null) {
                 // Speed ramps: the clip is cut into segments, each with its own speed. Picture speed (SpeedChangeEffect) and sound
                 // speed (SonicAudioProcessor, keeps the voice pitch) change together. Overlays and the look run on the finished timeline.
@@ -290,7 +290,7 @@ final class ClipExporter {
                                     .setStartPositionMs((long) ((s + ramp.from[i]) * 1000)).setEndPositionMs((long) ((s + ramp.to[i]) * 1000)).build())
                             .build();
                     List<Effect> ve = new ArrayList<>(reframe(vw, vh, W, H, fill, cropX, track, ramp.from[i]));
-                    List<AudioProcessor> aeList = new ArrayList<>(); aeList.add(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, ramp.to[i] - ramp.from[i], false));
+                    List<AudioProcessor> aeList = new ArrayList<>(); aeList.add(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, ramp.to[i] - ramp.from[i], false)); if (spec.optBoolean("voiceEnhance", false)) aeList.add(new VoiceClarityProcessor());
                     if (Math.abs(ramp.speed[i] - 1) > 0.01) {
                         ve.add(new SpeedChangeEffect((float) ramp.speed[i]));
                         SonicAudioProcessor so = new SonicAudioProcessor();
@@ -307,7 +307,7 @@ final class ClipExporter {
                 List<Effect> all = new ArrayList<>(pre);
                 all.addAll(fx);
                 EditedMediaItem video = new EditedMediaItem.Builder(mi)
-                        .setEffects(new Effects(ImmutableList.<AudioProcessor>of(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, dur, false)), ImmutableList.copyOf(all)))
+                        .setEffects(new Effects(ImmutableList.copyOf(sourceAudioProcessors(spec, dur)), ImmutableList.copyOf(all)))
                         .setFrameRate(fps)
                         .build();
                 seqs.add(new EditedMediaItemSequence(ImmutableList.of(video)));
@@ -787,6 +787,50 @@ final class ClipExporter {
         double[] out = new double[m.size() * 2];
         for (int i = 0; i < m.size(); i++) { out[2 * i] = m.get(i)[0]; out[2 * i + 1] = m.get(i)[1]; }
         return out;
+    }
+
+    /** Light voice-clarity filter: trims low rumble and gently controls peaks. Not a denoiser. */
+    static final class VoiceClarityProcessor extends BaseAudioProcessor {
+        private int channels = 2, sampleRate = 44100;
+        private float[] prevX = new float[2], prevY = new float[2];
+        private float hpAlpha = 0.98f;
+        @Override protected AudioFormat onConfigure(AudioFormat in) throws UnhandledAudioFormatException {
+            if (in.encoding != C.ENCODING_PCM_16BIT) throw new UnhandledAudioFormatException(in);
+            channels = Math.max(1, in.channelCount);
+            sampleRate = Math.max(8000, in.sampleRate);
+            prevX = new float[channels]; prevY = new float[channels];
+            hpAlpha = (float) Math.exp(-2.0 * Math.PI * 95.0 / sampleRate);
+            return in;
+        }
+        @Override public void queueInput(ByteBuffer input) {
+            int n = input.remaining();
+            ByteBuffer output = replaceOutputBuffer(n);
+            output.order(ByteOrder.nativeOrder());
+            ByteOrder previousOrder = input.order();
+            input.order(ByteOrder.nativeOrder());
+            int ch = 0;
+            while (input.remaining() >= 2) {
+                float x = input.getShort() / 32768f;
+                float hp = x - prevX[ch] + hpAlpha * prevY[ch];
+                prevX[ch] = x; prevY[ch] = hp;
+                float y = x + 0.55f * (hp - x);
+                float a = Math.abs(y);
+                if (a > 0.62f) y = Math.copySign(0.62f + (a - 0.62f) * 0.48f, y);
+                y = Math.max(-0.98f, Math.min(0.98f, y));
+                output.putShort((short) Math.round(y * 32767f));
+                ch = (ch + 1) % channels;
+            }
+            input.order(previousOrder);
+            output.flip();
+        }
+    }
+
+    private static List<AudioProcessor> sourceAudioProcessors(JSONObject spec, double duration) {
+        List<AudioProcessor> processors = new ArrayList<>();
+        processors.add(new GainProcessor((float) Math.max(0, Math.min(1.5,
+                spec.optDouble("srcVol", 100) / 100.0)), null, duration, false));
+        if (spec.optBoolean("voiceEnhance", false)) processors.add(new VoiceClarityProcessor());
+        return processors;
     }
 
     /** PCM16 volume for the music bed. With speech spans it also ducks the music while someone talks (fast attack, slow release). */
