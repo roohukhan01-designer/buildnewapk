@@ -135,6 +135,95 @@ details.acc>div{padding:0 16px 16px}
 #v-set details.acc>div>label.f:first-child{margin-top:0}
 #v-set input[type=password]{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:10px;min-height:44px}
 #v-set .card h3{margin-bottom:6px}
+
+/* ===== ClipForge Studio UI refresh ===== */
+:root{
+ --bg:#090d0f;--pn:#12191c;--p2:#1b2528;--ln:#2b393c;
+ --tx:#f1f7f4;--mu:#9aaba7;--ac:#c9ff4d;--ac2:#54e0c1;--ac3:#76a8ff;
+ --rec:#ff6478;--ok:#5be2ad;--g:linear-gradient(135deg,#c9ff4d 0%,#54e0c1 100%);
+ color-scheme:dark
+}
+html{background:var(--bg);scroll-behavior:smooth}
+body{background:radial-gradient(1000px 560px at 82% -18%,rgba(84,224,193,.12),transparent 62%),radial-gradient(800px 460px at -18% 4%,rgba(201,255,77,.08),transparent 60%),var(--bg);background-attachment:fixed;color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em}
+.top{background:rgba(9,13,15,.88);border-bottom:1px solid rgba(154,171,167,.14);box-shadow:0 10px 30px rgba(0,0,0,.16)}
+.top .in{max-width:980px}
+.logo{font-family:system-ui,sans-serif;font-size:19px;letter-spacing:-.04em;font-weight:850}
+.logo i{width:28px;height:28px;border-radius:9px;background:var(--g);box-shadow:0 0 22px rgba(201,255,77,.14)}
+.stepper{margin-top:8px;gap:4px}
+.st{font-size:11px;letter-spacing:.02em;text-transform:uppercase}
+.st i{width:27px;height:27px;background:#172023;border-color:#2b393c}
+.st.on i{background:var(--ac);color:#101509;box-shadow:0 0 0 4px rgba(201,255,77,.12)}
+.st.done i{background:var(--ok);color:#071b13}
+.stl{background:#2b393c}
+main{max-width:980px;padding:24px 18px calc(118px + env(safe-area-inset-bottom,0px))}
+h2{font:800 clamp(30px,5vw,44px)/1.03 system-ui,-apple-system,sans-serif;letter-spacing:-.055em;margin:10px 0 8px;max-width:18ch}
+h3{font:750 20px/1.2 system-ui,-apple-system,sans-serif;letter-spacing:-.035em}
+.lead{font-size:15px;line-height:1.65;max-width:54ch;color:#a8b8b4}
+.card{background:linear-gradient(160deg,rgba(255,255,255,.035),transparent 50%),var(--pn);border:1px solid rgba(154,171,167,.16);border-radius:22px;padding:18px;margin:16px 0;box-shadow:0 16px 40px rgba(0,0,0,.12)}
+button,select,input[type=text],input[type=password]{border-radius:13px;transition:background .18s,border-color .18s,transform .18s,box-shadow .18s}
+button{background:#1b2528;border-color:#2b393c;font-weight:650}
+button:active:not(:disabled){transform:scale(.98)}
+button:hover:not(:disabled){border-color:rgba(201,255,77,.65);background:#202c2f}
+button.pri{background:var(--g);color:#101509;border:0;box-shadow:0 8px 22px rgba(201,255,77,.12)}
+button.pri:hover:not(:disabled),button.big:hover:not(:disabled){filter:brightness(1.05);box-shadow:0 10px 28px rgba(201,255,77,.2)}
+button.big{background:var(--g);color:#101509;border:0;border-radius:16px;min-height:58px;font-size:16px;font-weight:850;letter-spacing:-.02em;box-shadow:0 10px 28px rgba(201,255,77,.12);margin-top:14px}
+button.ghost{background:rgba(255,255,255,.025);border:1px solid #344346;color:var(--tx)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:3px}
+select,input[type=text],input[type=password]{background:#0c1214;border-color:#2b393c}
+select:focus,input[type=text]:focus,input[type=password]:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(201,255,77,.09)}
+input[type=range]{accent-color:var(--ac)}
+.drop{background:linear-gradient(140deg,rgba(201,255,77,.055),rgba(84,224,193,.035));border:1px dashed rgba(201,255,77,.42);border-radius:22px;padding:28px 18px}
+.drop:hover{background:rgba(201,255,77,.07);border-color:var(--ac)}
+.dropic{width:54px;height:54px;border-radius:16px;background:var(--g);color:#101509;box-shadow:0 8px 24px rgba(201,255,77,.14);font-size:32px}
+.drop b{font:800 23px/1.2 system-ui,sans-serif;letter-spacing:-.04em}
+.drop .sub{display:block;color:var(--mu);font-size:13px;margin-top:6px}
+.hint{font-size:13px;line-height:1.55;color:#879894}
+.note{border-left-color:var(--ac);background:rgba(201,255,77,.06);color:#b5c4bf}
+.tabbar{background:rgba(12,17,19,.94);border-top:1px solid rgba(154,171,167,.17);box-shadow:0 -12px 34px rgba(0,0,0,.25);padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+.tabbar button{border-radius:13px;color:#879894;font-size:11px;min-height:52px;gap:3px}
+.tabbar button.on{color:var(--ac);background:rgba(201,255,77,.07)}
+.tabbar svg{width:22px;height:22px}
+details.acc{background:#12191c;border-color:rgba(154,171,167,.15);border-radius:16px}
+details.acc>summary{font-size:14px}
+details.acc[open]>summary{color:var(--ac)}
+details.acc>div{padding-top:4px}
+.seg{background:#11181a;border-color:#2b393c}
+.seg button.on{background:#263135;color:var(--ac);box-shadow:inset 0 0 0 1px rgba(201,255,77,.45)}
+#pv{border-radius:22px;border-color:#354346;box-shadow:0 20px 55px rgba(0,0,0,.45)}
+.clips .cc{background:#12191c;border-color:#2b393c}
+.clips .cc.on{background:#1b2528;border-color:var(--ac);box-shadow:0 0 0 2px rgba(201,255,77,.12)}
+.clips .cc .no{background:var(--g);color:#101509}
+.plan{border-color:rgba(201,255,77,.24);background:linear-gradient(135deg,rgba(201,255,77,.055),rgba(84,224,193,.035)),var(--pn)}
+.actions{background:rgba(9,13,15,.93);border-color:rgba(154,171,167,.16);box-shadow:0 12px 32px rgba(0,0,0,.24)}
+.pct b{background:var(--g);-webkit-background-clip:text;background-clip:text}
+.bar{background:#1b2528}.bar>i{background:var(--g)}
+.steps li{background:#1b2528}
+.steps li.run{border-color:var(--ac)}
+.steps li.run:before{border-color:var(--ac);border-top-color:transparent}
+.steps li.ok:before{background:var(--ok);border-color:var(--ok)}
+.lib>div{background:var(--pn);border-color:rgba(154,171,167,.16);border-radius:18px}
+.lib img{border-color:#2b393c}
+#toast{background:var(--ac);color:#101509;border-radius:14px;box-shadow:0 12px 36px rgba(0,0,0,.35)}
+dialog{background:var(--pn);border-color:#354346;border-radius:20px;box-shadow:0 24px 80px #0008}
+label.f{color:#a8b8b4;font-weight:650;letter-spacing:.01em}
+label.k{color:#dbe5e1;font-size:14px;line-height:1.45}
+p{line-height:1.6}
+@media(min-width:760px){
+ main{padding-top:30px}
+ #v-import>.card:first-of-type{padding:24px}
+ .drop{padding:44px 24px}
+ .rv2{gap:28px}
+}
+@media(max-width:520px){
+ main{padding-left:14px;padding-right:14px}
+ .card{padding:15px;border-radius:18px}
+ h2{font-size:34px}
+ .stl{flex-basis:18px}
+ .st{font-size:10px}
+ .tabbar{padding-left:5px;padding-right:5px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}button,select,input{transition:none}}
+
 </style>
 <script src="validate.js"></script>
 <script src="motion.js"></script>
