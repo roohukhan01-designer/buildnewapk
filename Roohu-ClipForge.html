@@ -1,0 +1,783 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Roohu ClipForge</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Figtree:wght@400;600;800&family=Anton&family=Bebas+Neue&family=Montserrat:wght@800&family=Poppins:wght@800;900&family=Michroma&family=Archivo+Black&family=Bangers&family=Oswald:wght@700&family=Playfair+Display:wght@800&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Michroma";src:url(fonts/Michroma-Regular.ttf) format("truetype");font-display:block}
+@font-face{font-family:"Poppins XB";src:url(fonts/Poppins-ExtraBold.ttf) format("truetype");font-weight:800;font-display:block}
+:root{--bg:#0A1A1F;--pn:#112A31;--p2:#17363F;--ln:#24474F;--tx:#ECE5D8;--mu:#8FAAB0;--ac:#FF8F3F;--rec:#EF4B52;--ok:#5FD3A0;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 15px/1.5 Figtree,system-ui,sans-serif}
+h1,h2,h3{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;margin:0;letter-spacing:.01em}
+h2{font-size:34px;line-height:1}h3{font-size:20px}
+p{margin:.4em 0;color:var(--mu);max-width:62ch}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--p2);border:1px solid var(--ln);border-radius:8px;padding:10px 14px;cursor:pointer;min-height:44px}
+button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.4;cursor:not-allowed}
+button.pri{background:var(--ac);color:#1a0d00;border-color:var(--ac);font-weight:800}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+select,input[type=text]{background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:10px;min-height:44px;width:100%}
+input[type=range]{width:100%;accent-color:var(--ac)}input[type=checkbox]{accent-color:var(--ac);width:20px;height:20px}
+.app{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+nav{background:var(--pn);border-right:1px solid var(--ln);padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:18px;font:900 24px "Big Shoulders Display",sans-serif}
+.brand i{width:30px;height:30px;border-radius:6px;background:repeating-linear-gradient(135deg,var(--ac) 0 6px,#1a0d00 6px 12px);display:block}
+nav button{text-align:left;background:none;border-color:transparent}nav button.on{background:var(--p2);border-color:var(--ln);color:var(--ac);font-weight:600}
+main{padding:24px clamp(14px,3vw,36px) 40px;max-width:1100px;width:100%}
+.view[hidden]{display:none}
+.card{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:16px;margin:14px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.drop{border:2px dashed var(--ln);border-radius:12px;padding:28px;text-align:center;cursor:pointer;display:block}.drop:hover{border-color:var(--ac)}
+.drop input{display:none}.drop b{font:900 26px "Big Shoulders Display",sans-serif;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--ln);border-radius:99px;padding:4px 12px;font-size:13px;display:flex;gap:7px;align-items:center}
+.chip:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ok)}.chip.w:before{background:var(--ac)}.chip.o:before{background:var(--rec)}
+.bar{height:8px;background:var(--bg);border-radius:9px;overflow:hidden}.bar>i{display:block;height:100%;width:0;background:var(--ac);transition:width .2s}
+canvas.curve{width:100%;height:110px;background:var(--bg);border-radius:8px;display:block}
+.steps{list-style:none;padding:0;margin:10px 0}.steps li{padding:6px 0;color:var(--mu)}.steps li.run{color:var(--ac)}.steps li.ok{color:var(--ok)}.steps li.warn{color:var(--ac)}
+.rv{display:grid;grid-template-columns:minmax(220px,340px) 1fr;gap:18px;align-items:start}
+#pv{width:100%;aspect-ratio:9/16;background:#000;border-radius:14px;border:1px solid var(--ln);display:block}
+.cc{display:block;width:100%;text-align:left;margin-bottom:8px}.cc b{display:block}.cc span{font-size:13px;color:var(--mu)}.cc.on{border-color:var(--ac);background:var(--p2)}
+label.f{display:block;margin:10px 0 4px;font-size:13px;color:var(--mu)}label.k{display:flex;gap:10px;align-items:center;margin:10px 0}
+output{color:var(--ac);font-weight:600}
+.lib{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}.lib img{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:8px;background:#000}
+#toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:#10242a;padding:10px 16px;border-radius:9px;max-width:90vw;display:none;z-index:9;font-weight:600}
+dialog{background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:12px;max-width:92vw}dialog video{max-height:70vh;max-width:100%}
+.note{border-left:3px solid var(--ac);padding:6px 12px;color:var(--mu);margin:10px 0}
+@media(max-width:859px){.app{display:block}nav{position:fixed;inset:auto 0 0 0;height:auto;flex-direction:row;border:0;border-top:1px solid var(--ln);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:5;justify-content:space-around}
+nav .brand{display:none}nav button{flex:1;text-align:center;padding:8px 2px;font-size:12px}main{padding-bottom:100px}.rv{grid-template-columns:1fr}#pv{max-width:300px;margin:0 auto}h2{font-size:30px}}
+button.big{font-size:18px;min-height:58px;width:100%;margin-top:12px;background:linear-gradient(135deg,#FF8F3F,#FF3D81);color:#1a0d00;border:0;font-weight:900}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ===== v4 design: 3 steps (Import, AI works, Review and post) ===== */
+:root{--bg:#0B0A14;--pn:#15132A;--p2:#201D3C;--ln:#2E2B56;--tx:#F5F2FF;--mu:#ABA7CE;--ac:#FFA23F;--ac2:#FF4D8D;--ac3:#8B5CFF;--rec:#FF5C6A;--ok:#4FE0A8;--g:linear-gradient(135deg,#FFA23F,#FF4D8D);padding-top:0}
+body{background:radial-gradient(900px 520px at 90% -8%,rgba(139,92,255,.28),transparent 60%),radial-gradient(700px 420px at -10% 8%,rgba(255,77,141,.16),transparent 60%),var(--bg);background-attachment:fixed;font-size:16px}
+.app{display:block;min-height:100vh}
+main{max-width:760px;margin:0 auto;padding:16px 16px calc(120px + env(safe-area-inset-bottom,0px))}
+h2{font-size:40px;line-height:.98;margin:6px 0 4px}h3{font-size:22px}
+.lead{color:var(--mu);font-size:16px;margin:6px 0 12px;max-width:46ch}
+.top{position:sticky;top:0;z-index:6;background:rgba(11,10,20,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--ln);padding:calc(8px + env(safe-area-inset-top,0px)) 14px 6px}
+.top .in{max-width:560px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:8px;font:900 22px "Big Shoulders Display",sans-serif}
+.logo i{width:24px;height:24px;border-radius:7px;background:var(--g);display:block}
+.stepper{display:flex;align-items:flex-start;margin-top:2px}
+.st{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;padding:2px;min-height:44px;color:var(--mu);font-size:12px;font-weight:700;border-radius:10px}
+.st i{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:14px;background:var(--p2);border:1px solid var(--ln)}
+.st.on{color:var(--tx)}.st.on i{background:var(--g);color:#1A0A14;border-color:transparent;box-shadow:0 0 0 4px rgba(255,77,141,.2)}
+.st.done i{background:var(--ok);color:#06241a;border-color:transparent}
+.stepper[hidden]{display:none}
+.stl{flex:0 0 28px;height:2px;margin-top:16px;background:var(--ln);border-radius:2px}.stl.done{background:var(--ok)}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:7;display:flex;background:rgba(17,15,34,.95);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--ln);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:0;color:var(--mu);font-size:12px;font-weight:700;min-height:50px;padding:4px}
+.tabbar button.on{color:var(--ac)}
+.tabbar svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012)),var(--pn);border:1px solid var(--ln);border-radius:20px;padding:18px;margin:14px 0}
+button{border-radius:12px}
+button.pri{background:var(--g);color:#1A0A14;border:0;font-weight:800}
+button.big{background:var(--g);color:#1A0A14;border:0;border-radius:16px;min-height:60px;font-size:18px;font-weight:900;box-shadow:0 10px 30px rgba(255,77,141,.32);margin-top:14px}
+button.ghost{width:100%;background:none;border:1px solid var(--ln);margin-top:10px;color:var(--tx)}
+button.lnk{background:none;border:0;color:var(--ac);text-decoration:underline;padding:4px 6px;min-height:36px}
+.hint{font-size:14px;margin:8px 2px 0}
+.drop{border:2px dashed #4B478F;border-radius:22px;padding:30px 16px;background:rgba(139,92,255,.07)}
+.drop:hover{border-color:var(--ac)}
+.dropic{display:grid;place-items:center;width:58px;height:58px;margin:0 auto 10px;border-radius:50%;background:var(--g);color:#1A0A14;font:900 34px/1 "Big Shoulders Display",sans-serif}
+.drop b{font-size:28px}.drop .sub{color:var(--mu);font-size:14px}
+#vi b{font-size:17px;word-break:break-word}
+.note{border-left:3px solid var(--ac);background:rgba(255,162,63,.08);border-radius:0 10px 10px 0;padding:10px 12px}
+details.acc{background:var(--pn);border:1px solid var(--ln);border-radius:16px;margin:10px 0;overflow:hidden}
+details.acc>summary{list-style:none;cursor:pointer;padding:14px 16px;min-height:50px;font-weight:800;display:flex;align-items:center;justify-content:space-between}
+details.acc>summary::-webkit-details-marker{display:none}
+details.acc>summary:after{content:"";width:9px;height:9px;border-right:2px solid var(--mu);border-bottom:2px solid var(--mu);transform:rotate(45deg);transition:transform .2s;margin-right:4px}
+details.acc[open]>summary:after{transform:rotate(-135deg)}
+details.acc>div{padding:0 16px 16px}
+.pct{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.pct b{font:900 64px/1 "Big Shoulders Display",sans-serif;background:var(--g);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bar{height:12px;border-radius:12px;background:var(--p2)}.bar>i{background:var(--g);border-radius:12px}
+.steps{list-style:none;padding:0;margin:16px 0;display:grid;gap:10px}
+.steps li{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:14px;background:var(--p2);color:var(--mu);border:1px solid transparent}
+.steps li:before{content:"";width:22px;height:22px;border-radius:50%;border:2px solid var(--ln);flex:none;box-sizing:border-box}
+.steps li.run{color:var(--tx);border-color:var(--ac)}
+.steps li.run:before{border-color:var(--ac);border-top-color:transparent;animation:spin .9s linear infinite}
+.steps li.ok{color:var(--tx)}
+.steps li.ok:before,.steps li.warn:before{display:grid;place-items:center;font-weight:900;font-size:13px;color:#06241a}
+.steps li.ok:before{content:"\2713";background:var(--ok);border-color:var(--ok)}
+.steps li.warn{color:var(--tx)}.steps li.warn:before{content:"!";background:var(--ac);border-color:var(--ac)}
+.steps li#s-edit{display:none}body.nat .steps li#s-edit{display:flex}
+@keyframes spin{to{transform:rotate(360deg)}}
+.log{min-height:1.5em;color:var(--mu);font-size:14px}
+.cap2{font-size:13px;color:var(--mu);margin:12px 0 4px}
+.seg{display:flex;background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:4px;gap:4px;margin:0 0 8px}
+.seg[hidden]{display:none}
+.seg button{flex:1;border:0;background:none;min-height:42px;font-weight:800;color:var(--mu);border-radius:10px}
+.seg button.on{background:var(--p2);color:var(--tx);box-shadow:inset 0 0 0 1px var(--ac)}
+.rv2{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}.rv2>*{min-width:0}.clips .cc span:not(.no){display:block}
+.stage{text-align:center}
+#pv{max-width:290px;margin:0 auto;border-radius:24px;border:1px solid var(--ln);box-shadow:0 22px 60px rgba(139,92,255,.32)}
+.center{justify-content:center;margin-top:12px}
+.clips{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x mandatory}
+.clips .cc{flex:0 0 190px;width:auto;margin:0;scroll-snap-align:start;border-radius:16px;background:var(--pn);padding:12px}
+.clips .cc.on{border-color:var(--ac);background:var(--p2);box-shadow:0 0 0 2px rgba(255,162,63,.35)}
+.clips .cc b{font-size:15px;line-height:1.25;max-height:2.5em;overflow:hidden}
+.clips .cc .no{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--g);color:#1A0A14;font-weight:900;font-size:13px;margin-bottom:6px}
+.plan{border-color:rgba(255,162,63,.55);background:linear-gradient(135deg,rgba(255,162,63,.12),rgba(139,92,255,.12)),var(--pn)}
+.plan h3{display:flex;align-items:center;gap:8px}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.pill{display:inline-flex;gap:6px;align-items:center;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.08);font-size:13px;font-weight:700}
+.actions{position:sticky;bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:4;display:flex;gap:10px;padding:10px;margin-top:16px;background:rgba(11,10,20,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--ln);border-radius:18px}
+.actions button{flex:1}
+#el .row{background:var(--p2);border-radius:12px;padding:8px 10px}
+@media(min-width:900px){main{max-width:1000px}.rv2{grid-template-columns:minmax(240px,320px) minmax(0,1fr);gap:22px;align-items:start}.stage{position:sticky;top:130px}}
+@media(prefers-reduced-motion:reduce){.steps li.run:before{animation:none;border-top-color:var(--ac)}}
+
+.lib{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.lib>div{background:var(--p2);border:1px solid var(--ln);border-radius:16px;padding:10px;min-width:0}
+.lib img{border-radius:12px;border:1px solid var(--ln)}
+.lib b{display:block;margin-top:8px;font-size:15px;line-height:1.25}
+.lib p{margin:2px 0 8px;font-size:13px}
+.lib .row{gap:6px}.lib .row button{flex:1 1 auto;padding:6px 8px;min-height:40px;font-size:14px}
+#ll .card h3{font-size:20px;word-break:break-word}
+#v-set details.acc>div>label.f:first-child{margin-top:0}
+#v-set input[type=password]{width:100%;background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:10px;min-height:44px}
+#v-set .card h3{margin-bottom:6px}
+</style>
+<script src="validate.js"></script>
+<script src="motion.js"></script>
+<script src="clips.js"></script>
+<script>
+/* Android WebView bridge: native saving, offline captions, hardware export, back navigation */
+(function(){if(!window.AndroidBridge)return;const B=window.AndroidBridge;
+window.claude={use:async n=>n==='downloads'?{save:async({filename,data})=>{
+ const blob=data instanceof Blob?data:new Blob([data],{type:'text/plain'});
+ if(!B.begin(filename,blob.type||'application/octet-stream'))throw Object.assign(new Error('Could not create the file in Downloads'),{code:'failed'});
+ try{const CH=3*1024*1024;for(let o=0;o<blob.size;o+=CH){const b64=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=()=>rej(r.error);r.readAsDataURL(blob.slice(o,o+CH))});if(!B.chunk(b64))throw new Error('Writing the file failed')}
+  if(!B.end())throw new Error('Finishing the file failed')}catch(e){B.abort();throw e}}}:null};
+/* promise wrapper around native jobs (transcribe / export) */
+window.cfNative={id:0,jobs:{},
+ call(fn,payload,onprog){return new Promise((res,rej)=>{const id=++this.id;this.jobs[id]={res,rej,onprog};try{fn(JSON.stringify(Object.assign({},payload,{id})))}catch(e){delete this.jobs[id];rej(e)}})},
+ onProgress(id,p){const j=this.jobs[id];if(j&&j.onprog)j.onprog(p)},
+ onResult(id,json){const j=this.jobs[id];if(!j)return;delete this.jobs[id];let r;try{r=JSON.parse(json)}catch(e){return j.rej(e)}r.ok?j.res(r):j.rej(new Error(r.error||'Native task failed'))}};
+window.cfBack=()=>{try{if(typeof dg!=='undefined'&&dg.open){dg.close();return true}if(S.view!=='import'){go('import');return true}}catch(e){}return false};
+document.addEventListener('visibilitychange',()=>{try{if(document.hidden&&!exporting&&!capBusy)stopPlay()}catch(e){}});
+})();
+</script>
+</head><body><div class="app">
+<header class="top" id="top"><div class="in"><div class="logo"><i></i>ClipForge</div>
+<div class="stepper" id="stepper" role="group" aria-label="Steps"><button class="st on" data-n="1"><i>1</i>Import</button><span class="stl" id="stl1"></span><button class="st" data-n="2"><i>2</i>AI works</button><span class="stl" id="stl2"></span><button class="st" data-n="3"><i>3</i>Review and post</button></div></div></header>
+<div class="tabbar" role="navigation" aria-label="Sections">
+<button data-v="create" class="on"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/></svg>Create</button>
+<button data-v="lib"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="7" height="7" rx="1.5"/><rect x="13.5" y="4" width="7" height="7" rx="1.5"/><rect x="3.5" y="14" width="7" height="7" rx="1.5"/><rect x="13.5" y="14" width="7" height="7" rx="1.5"/></svg>Library</button>
+<button data-v="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3h0a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5h0a1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9v0a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Settings</button></div>
+<main>
+<div class="seg" id="seg" hidden><button data-v="review">Edit</button><button data-v="sub">Captions</button><button data-v="export">Post</button></div>
+<section class="view" id="v-import"><h2>Make clips from any long video</h2><p class="lead">Pick a video. The AI finds the best moments, edits them, and gets them ready to post.</p>
+<div class="card"><label class="drop"><input type="file" id="vf" accept="video/*"><span class="dropic">+</span><b>Choose a video</b><span class="sub">MP4, MOV or WebM. It stays on your phone.</span></label><div id="vi" style="margin-top:12px"></div>
+<div id="keywarn" class="note" hidden>The AI needs two free keys (Groq and Gemini). <button class="lnk" id="kw">Add the keys</button></div>
+<button class="big" id="auto" disabled>✨ Make my clips with AI</button><p class="hint">One tap. The AI finds the moments, plans every edit, adds captions and music, and saves the clips to your Gallery.</p>
+<button class="ghost" id="go" disabled>Only find the best moments</button>
+<details class="acc" style="margin-top:14px"><summary>More options</summary><div><label class="drop" style="padding:14px"><input type="file" id="sf" accept=".srt,.vtt,.txt"><b style="font-size:20px">Add captions (.srt or .vtt)</b><span style="color:var(--mu)" id="si">Optional. Used for burned-in captions and for the AI clip titles.</span></label><label class="k"><input type="checkbox" data-k="autoCap">Auto-caption the clips after analysis</label></div></details></div>
+<div class="card" id="prj" hidden><h3>Your projects</h3><p>Edits save automatically. After closing the app, tap Continue and pick the same video again to carry on.</p><div id="prjl"></div></div>
+<span id="caps" hidden></span></section>
+
+<section class="view" id="v-analyze" hidden><h2>AI is working</h2><p class="lead">Keep the app open and the screen on. A long video can take a few minutes.</p>
+<div class="card"><div class="pct"><b id="pp">0%</b></div><div class="bar"><i id="pb"></i></div>
+<ul class="steps"><li id="s-aud">Listening to the whole video</li><li id="s-mot">Finding the high points</li><li id="s-rank">Picking the best clips</li><li id="s-edit">Planning the edit of each clip (zooms, sounds, hook)</li></ul>
+<p id="alog" class="log"></p>
+<div class="cap2">Loud and exciting moments in your video</div><canvas class="curve" aria-label="Moment score across the video"></canvas>
+<button class="big" id="tor" hidden>See my clips →</button></div></section>
+
+<section class="view" id="v-review" hidden>
+<div id="rv-empty" class="card"><h3>No clips yet</h3><p>Pick a video in step 1 and let the AI work.</p><button class="pri" id="rv-go">Go to step 1</button></div>
+<div id="rv-main" hidden><div class="rv2">
+<div class="stage"><canvas id="pv" width="360" height="640"></canvas><div class="row center"><button id="pl" class="pri">▶ Play</button><button id="ps">Pause</button></div></div>
+<div class="side"><h3>Your clips</h3><div id="cl" class="clips"></div>
+<div class="card plan" id="aip"><h3>✨ The AI’s edit plan</h3><div id="aipb"></div><div class="row"><button id="aiedit">Plan again with AI</button><button id="ai">Title and rate with AI</button></div></div>
+<details class="acc" open><summary>Trim</summary><div><label class="f">Start <output id="tso"></output></label><input type="range" id="ts" min="0" step="1"><label class="f">End <output id="teo"></output></label><input type="range" id="te" min="0" step="1"></div></details>
+<details class="acc"><summary>Look</summary><div><label class="f">Reframe</label><select id="md"><option value="fill">Fill 9:16 (follows motion)</option><option value="fit">Fit with blurred background</option></select>
+<label class="f">Crop position</label><input type="range" id="px" min="-100" max="100"><label class="k"><input type="checkbox" id="en">Enhance (contrast, colour, vignette)</label>
+<label class="f">Transition</label><select id="tr"><option value="fade">Fade in and out</option><option value="punch">Zoom punch-in</option><option value="none">None</option></select>
+<label class="k"><input type="checkbox" id="bt">Beat-pulse zoom (follows the audio)</label></div></details>
+<details class="acc"><summary>Captions</summary><div><label class="k"><input type="checkbox" id="cp">Burn in captions</label><div class="row"><button id="ac">Auto-caption this clip</button><button id="acall">Auto-caption all clips</button></div><p id="as"></p><div id="ce"></div></div></details>
+<details class="acc"><summary>Music</summary><div><label class="f">Music</label><select id="mu"></select></div></details>
+<div class="actions"><button id="ex1">Export this clip</button><button class="pri" id="tpost">Next: post →</button></div>
+</div></div>
+<div class="card"><div class="cap2" style="margin-top:0">Your clips on the video timeline</div><canvas class="curve" aria-label="Selected clips on the timeline"></canvas></div></div></section>
+
+<section class="view" id="v-sub" hidden><h2>Caption editor</h2><p>Fix wording and timing. Every change goes straight into the exported clips.</p>
+<div class="card"><div class="row"><button id="sub-imp">Import .srt / .vtt</button><button id="sub-exp">Export .srt</button><button id="sub-add">Add line at playhead</button></div>
+<div class="row" style="margin-top:8px"><button id="sub-m">Shift all −0.1 s</button><button id="sub-p">Shift all +0.1 s</button><label class="k"><input type="checkbox" id="sub-only" checked>Only the selected clip</label></div></div>
+<div id="sub-list"></div></section>
+<section class="view" id="v-export" hidden><h2>Export and post</h2><p class="lead">Clips are saved to your Gallery as MP4 files. Keep the screen on until they finish.</p>
+<div class="card"><h3>Your clips</h3><div id="el"></div><button class="big" id="exa">Export all clips</button><button class="ghost" id="exc" hidden>Cancel</button><div class="bar" style="margin-top:14px"><i id="xb"></i></div><p id="xs"></p></div>
+<div class="card"><h3>Post</h3><label class="k"><input type="checkbox" data-k="autoPost">After every export (manual or Auto Create), upload the clips to YouTube with the AI caption</label><p><b>YouTube:</b> connect it once in Settings. Then the AI writes the title and tags and uploads for you.</p><p><b>TikTok and Instagram:</b> they do not let apps post by themselves. Open <b>Library</b>, tap <b>Share</b> on a clip, and pick TikTok or Instagram.</p></div>
+<details class="acc"><summary>Quality settings</summary><div><div class="grid"><div><label class="f">Resolution</label><select data-k="res" data-n="1"><option value="480">480p (small file)</option><option value="720">720p HD</option><option value="1080">1080p Full HD</option></select></div>
+<div><label class="f">Video bitrate</label><select data-k="br" data-n="1"><option value="2">2 Mbps (about 8 MB per 30 s)</option><option value="4">4 Mbps (about 15 MB per 30 s)</option><option value="6">6 Mbps (about 23 MB per 30 s)</option><option value="10">10 Mbps (about 38 MB per 30 s)</option><option value="16">16 Mbps (about 60 MB per 30 s)</option></select></div>
+<div><label class="f">Shape</label><select data-k="asp"><option value="9:16">9:16 Shorts / Reels</option><option value="16:9">16:9 Landscape</option><option value="1:1">1:1 Square</option><option value="4:5">4:5 Portrait</option><option value="3:4">3:4 Portrait</option></select></div>
+<div><label class="f">Frame rate</label><select data-k="fps" data-n="1"><option value="24">24 fps</option><option value="30">30 fps</option><option value="60">60 fps (needs a strong phone)</option></select></div></div>
+<label class="f">File name ({title} = clip title)</label><input type="text" data-k="fname" maxlength="60" placeholder="{title}"><p>File sizes are estimates (audio adds about 1 MB). The framed reaction look is used for portrait shapes only.</p>
+<p>Format: <b id="fm">checking…</b>. Your 3D name credit is burned into every clip.</p></div></details></section>
+
+<section class="view" id="v-lib" hidden><h2>Your clips</h2><p class="lead">Finished clips are also in your phone Gallery (Movies/RoohuClipForge). Tap Share to post on TikTok or Instagram.</p><div id="ll"></div></section>
+
+<section class="view" id="v-set" hidden><h2>Settings</h2><p class="lead">The AI needs two free keys. Everything else is optional.</p><div class="card"><h3>🔑 AI keys</h3><label class="f">Groq key: the AI listens to your video (free)</label><input type="password" data-k="groq" placeholder="gsk_… (optional, free at console.groq.com)" autocomplete="off"><div class="row" style="margin-top:8px"><button type="button" class="pri" data-save="groq">Save key</button><button type="button" data-clear="groq">Clear</button><span id="ks_groq" style="flex:1;font-size:13px"></span></div><p>With the key, captions understand any spoken language (Urdu, Hindi, Arabic, English and 90+ more) with exact word timing. Without it, the app uses its offline English and Hindi/Urdu models.</p><label class="f">Gemini key: the AI decides the edits (free)</label><input type="password" data-k="gemini" placeholder="Paste a free key from aistudio.google.com" autocomplete="off"><div class="row" style="margin-top:8px"><button type="button" class="pri" data-save="gemini">Save key</button><button type="button" data-clear="gemini">Clear</button><span id="ks_gemini" style="flex:1;font-size:13px"></span></div><label class="f">OpenRouter key: free models from many makers (optional)</label><input type="password" data-k="openrouter" placeholder="sk-or-… (free at openrouter.ai/keys)" autocomplete="off"><div class="row" style="margin-top:8px"><button type="button" class="pri" data-save="openrouter">Save key</button><button type="button" data-clear="openrouter">Clear</button><span id="ks_openrouter" style="flex:1;font-size:13px"></span></div><label class="f">Which AI decides the edits</label><select data-k="aiProv"><option value="gemini">Gemini</option><option value="openrouter">OpenRouter free models</option><option value="both">Gemini first, OpenRouter when Gemini is out</option></select><label class="f">OpenRouter model</label><select data-k="orModel"><option value="auto">Auto: the app tries the best free models</option></select><div class="row" style="margin-top:8px"><button type="button" id="orload">Load free models</button><span id="orst" style="flex:1;font-size:13px"></span></div><p>OpenRouter free models (names ending in :free) share <b>20 requests a minute and 50 a day</b> for your whole account (1,000 a day after you buy $10 of credits). One Auto Create run uses about 8 requests. Free models are run by outside companies, and some may keep or train on what they receive, so use them only for videos you are fine sharing. Models marked 👁 can look at the pictures. Others get the caption text only.</p><p>Internet needed when the AI works (Auto Create, “Title and rate with AI”, “Plan again with AI”). The AI you choose gets the <b>caption text</b> and <b>4 small pictures</b> from each clip. Your full video and your audio are never uploaded. Ratings describe how strong an opening is. They do not predict views.</p></div><details class="acc" open><summary>Clips</summary><div><label class="f">Target length <output></output> s</label><input type="range" data-k="len" min="15" max="60" step="5"><label class="f">Number of clips <output></output></label><input type="range" data-k="n" min="1" max="10"><label class="k"><input type="checkbox" data-k="follow">Follow the face (the picture pans to keep the speaker in frame)</label><label class="k"><input type="checkbox" data-k="ramps">Speed ramps (the AI adds slow-motion and speed-up moments)</label><p>Face tracking runs on your phone and uses no Gemini limit. It works best on upright, front-facing faces. If no face is found, the single AI crop is used. Speed ramps are skipped while face cam cutaways are on. The editor preview stays at normal speed; ramps appear in the exported clip.</p></div></details><details class="acc"><summary>Captions</summary><div><label class="k"><input type="checkbox" data-k="capOn">Captions on by default</label><label class="f">Style</label><select data-k="cap"><option value="auto">Auto: Clean (recommended)</option><option value="clean">Clean: white words, spoken word lit yellow, thick outline</option><option value="hype">Hype: colour-cycling words rise in</option><option value="reveal">Reveal: words appear as spoken</option><option value="mark">Highlight: white words, spoken word lit green / yellow / red (reaction edit, top of screen)</option><option value="sport">Sport edit (wide silver italic, like the Ronaldo edit)</option><option value="pop">3D pop (spoken word bounces + glows)</option><option value="fire">3D Fire (red-orange)</option><option value="gold">3D Gold</option><option value="ice">3D Ice (cyan)</option><option value="neon">3D Neon</option><option value="kara">Karaoke (words light up)</option><option value="bar">Clean bar</option><option value="line">Outlined</option></select>
+<label class="f">Font</label><select data-k="font"><option value="auto">Auto (match clip mood)</option><option>Anton</option><option>Bungee</option><option>Bangers</option><option>Luckiest Guy</option><option>Archivo Black</option><option>Poppins</option><option>Bebas Neue</option><option>Russo One</option><option>Black Ops One</option></select><label class="f">Spoken language</label><select data-k="lang"><option value="auto">Auto-detect (the app figures it out)</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="hi-IN">Hindi</option><option value="ur-PK">Urdu</option><option value="ar-SA">Arabic</option><option value="bn-BD">Bengali</option><option value="es-ES">Spanish</option><option value="fr-FR">French</option><option value="pt-BR">Portuguese (Brazil)</option><option value="id-ID">Indonesian</option><option value="tr-TR">Turkish</option></select><label class="k"><input type="checkbox" data-k="prog">Progress bar on clips</label><p>Auto-captions run offline on your phone and time every word. English and Hindi/Urdu speech are built in (Urdu speech is written in Devanagari script). For other languages, import an .srt file. Check the lines in the editor.</p></div></details><details class="acc"><summary>Look of the clip</summary><div><label class="f">Style of the exported clip</label><select data-k="look"><option value="react">Reaction: black frame, glowing dividers, 3D hook title, zoom + flash on loud moments</option><option value="neon">Neon story: full screen, rich colours, glowing typed title, fast zoom hits</option><option value="normal">Plain: no frame</option></select><p>The preview in the editor stays plain. The look appears in the exported clip. Both looks use the title of each clip. Neon story types the title letter by letter in glowing green, with the first line in yellow.</p></div></details><details class="acc"><summary>Face cam cutaways</summary><div><p>Add a second video, for example a face reaction. The exported clip then cuts between your main video and this one, like a reaction edit. The sound stays from the main video. Every cut gets a zoom and a flash. Phone export only.</p><label class="drop" style="padding:12px;margin-top:10px"><input type="file" id="rf" accept="video/*"><b style="font-size:20px">Choose face cam video</b><span style="color:var(--mu)" id="rfs">None chosen</span></label><label class="k"><input type="checkbox" data-k="cut">Cut to the face cam during the clip</label><label class="f">Face cam shows <output></output> s each time</label><input type="range" data-k="camA" min="1" max="4" step="0.5"><label class="f">Main video shows <output></output> s each time</label><input type="range" data-k="camB" min="1.5" max="6" step="0.5"><div class="row"><button type="button" id="rfc">Remove face cam</button></div></div></details><details class="acc"><summary>Music</summary><div><p>Add tracks you have the rights to use, and tag each by mood. Clips are matched to the mood the analysis detects (calm, upbeat or intense). Tracks last for this session.</p>
+<label class="k"><input type="checkbox" data-k="autoMusic">Pick music automatically from my songs</label><label class="f">Music style for the built-in beat</label><select data-k="musicStyle"><option value="off">Off (only use songs I add)</option><option value="auto">Auto (funk for energy, emotional for calm clips)</option><option value="funk">Funk (Brazilian funk)</option><option value="emotional">Emotional (piano + strings)</option><option value="phonk">Phonk (dark)</option></select><label class="k"><input type="checkbox" data-k="duck">Lower music while someone speaks (uses the clip’s captions)</label><label class="f">Music volume <output></output>%</label><input type="range" data-k="vol" min="5" max="100">
+<label class="drop" style="padding:12px;margin-top:10px"><input type="file" id="mf" accept="audio/*" multiple><b style="font-size:20px">Add music tracks</b></label><div id="tl"></div><div class="card" style="margin-top:12px"><h3>Music Finder (YouTube)</h3><p>The AI reads the selected clip (mood, topic, what is said) and picks the best real songs for it and finds them on YouTube. You preview the best pick, then add that song on YouTube with <b>Add sound</b> when you upload. The app never downloads or rips audio from YouTube videos.</p><label class="f">Free YouTube API key</label><input type="password" data-k="ytKey" placeholder="AIza… (Google Cloud, YouTube Data API v3)" autocomplete="off"><div class="row" style="margin-top:8px"><button type="button" class="pri" data-save="ytKey">Save key</button><button type="button" data-clear="ytKey">Clear</button><span id="ks_ytKey" style="flex:1;font-size:13px"></span></div><div class="row" style="margin-top:10px"><button class="big" id="mfind">🎵 Find the best music for this clip</button></div><p id="mfs"></p><div id="mres"></div></div></div></details><details class="acc"><summary>YouTube upload</summary><div><label class="f">YouTube upload (optional)</label><input type="password" data-k="ytId" placeholder="Google OAuth Client ID" autocomplete="off"><input type="password" data-k="ytSecret" placeholder="Google OAuth Client secret" autocomplete="off" style="margin-top:8px"><div class="row" style="margin-top:8px"><button id="ytc">Connect YouTube</button><button id="ytd">Disconnect</button><span id="yts" style="flex:1"></span></div><label class="f">Who can watch uploads</label><select data-k="ytPrivacy"><option value="private">Private (only you)</option><option value="unlisted">Unlisted (anyone with the link)</option><option value="public">Public</option></select><p>To upload after every export, use the switch on the Post screen (step 3).</p><p>Setup: in Google Cloud Console make a project, turn on “YouTube Data API v3”, create an OAuth client of type <b>Desktop app</b>, add your Google account as a test user, then paste the Client ID and secret here and tap Connect. Google keeps uploads from a new, unaudited project <b>private</b> until you pass their API audit, and each upload uses 1600 of the 10,000 free daily quota units (about 6 uploads a day). Keys stay encrypted on this phone.</p></div></details><details class="acc"><summary>Your name on the clips</summary><div><p>Your name “ROOHU X KHAN” appears in big 3D letters on every clip. You can change its size and opacity. With the reaction look it sits in the bottom bar.</p><label class="f">Position</label><select data-k="wmPos"><option value="mc">Lower middle (like the reference edit)</option><option value="br">Bottom right</option><option value="bl">Bottom left</option><option value="tr">Top right</option><option value="tl">Top left</option></select>
+<label class="f">Opacity <output></output>%</label><input type="range" data-k="wmOp" min="50" max="100"><label class="f">Size <output></output>%</label><input type="range" data-k="wmSize" min="70" max="160"></div></details></section>
+</main></div>
+<div id="toast" role="status"></div><dialog id="dg"><video id="dv" controls playsinline></video><div class="row" style="margin-top:8px"><button onclick="dg.close()">Close</button></div></dialog>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const NATIVE=!!window.cfNative;
+const fmt=t=>Math.floor(Math.max(0,t)/60)+':'+String(Math.floor(Math.max(0,t)%60)).padStart(2,'0');
+let cfg={cut:false,camA:2,camB:3,look:'neon',react:true,groq:'',gemini:'',ytId:'',ytSecret:'',ytPrivacy:'private',autoPost:false,musicStyle:'off',asp:'9:16',fps:30,fname:'{title}',len:30,n:5,cap:'auto',capOn:true,wmPos:'mc',wmOp:90,wmSize:100,vol:35,res:720,br:6,autoMusic:true,font:'auto',lang:'auto',duck:true,prog:true,autoCap:NATIVE,follow:true,ramps:true,openrouter:'',aiProv:'gemini',orModel:'auto'};
+try{Object.assign(cfg,JSON.parse(localStorage.getItem('cf')||'{}'))}catch(e){}
+if(cfg.v!==15){if(!cfg.v){cfg.wmPos='mc';if(!cfg.look)cfg.look='neon'}if(!cfg.v||cfg.v<13)cfg.cap='sport';if(!cfg.v||cfg.v<14)cfg.autoPost=true;cfg.v=15;cfg.musicStyle='off'}
+const LK=()=>cfg.look||'neon';
+/* AI provider (M26): Gemini (default), OpenRouter free models, or both. aiOk() = a key for the chosen provider exists. */
+const aiOk=()=>cfg.aiProv==='openrouter'?!!cfg.openrouter:cfg.aiProv==='both'?!!(cfg.gemini||cfg.openrouter):!!cfg.gemini;
+if(!cfg.look)cfg.look=cfg.react===false?'normal':'react';
+if(!cfg.v4){cfg.v4=1;cfg.cap='auto';cfg.font='auto';try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}}
+if(!cfg.v3){cfg.v3=1;cfg.lang='auto';cfg.react=true;cfg.font='auto';cfg.cap='auto';try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}}
+const persist=()=>{try{const c=Object.assign({},cfg);delete c.groq;delete c.gemini;delete c.openrouter;delete c.ytId;delete c.ytSecret;delete c.ytKey;localStorage.setItem('cf',JSON.stringify(c))}catch(e){}try{if(window.AndroidBridge){AndroidBridge.setSecret('groq',cfg.groq||'');AndroidBridge.setSecret('gemini',cfg.gemini||'');AndroidBridge.setSecret('openrouter',cfg.openrouter||'');AndroidBridge.setSecret('yt_id',cfg.ytId||'');AndroidBridge.setSecret('yt_secret',cfg.ytSecret||'');AndroidBridge.setSecret('ytKey',cfg.ytKey||'')}}catch(e){}};
+try{if(window.AndroidBridge){const k=AndroidBridge.getSecret('groq'),g=AndroidBridge.getSecret('gemini'),orK=AndroidBridge.getSecret('openrouter');if(k)cfg.groq=k;if(g)cfg.gemini=g;if(orK)cfg.openrouter=orK;const yi=AndroidBridge.getSecret('yt_id'),ys=AndroidBridge.getSecret('yt_secret');if(yi)cfg.ytId=yi;if(ys)cfg.ytSecret=ys;const yk=AndroidBridge.getSecret('ytKey');if(yk)cfg.ytKey=yk;if((!k&&cfg.groq)||(!g&&cfg.gemini))persist();}else{delete cfg.groq;delete cfg.gemini;delete cfg.openrouter;delete cfg.ytId;delete cfg.ytSecret;delete cfg.ytKey}}catch(e){}
+const S={file:null,url:'',dur:0,clips:[],cues:[],tracks:[],sel:0,curve:[],busy:false,view:'import'};
+const vid=document.createElement('video');vid.playsInline=true;vid.preload='auto';
+const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',4500)};
+const seek=t=>new Promise(r=>{const h=()=>{vid.removeEventListener('seeked',h);r()};vid.addEventListener('seeked',h);vid.currentTime=t});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function pickMime(){if(!window.MediaRecorder)return '';return ['video/mp4;codecs=avc1,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m))||''}
+/* nav */
+function go(v){S.view=v;$$('.view').forEach(x=>x.hidden=x.id!=='v-'+v);paintNav(v);
+ if(v==='lib')loadLib();if(v==='sub')renderSub();if(v==='review')showReview();if(v==='export')renderExp();if(v!=='review')stopPlay();if(v==='analyze')drawCurve();scrollTo(0,0)}
+$$('.tabbar button').forEach(b=>b.onclick=()=>go(b.dataset.v==='create'?createTarget():b.dataset.v));
+$$('#seg button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+$$('.st').forEach(b=>b.onclick=()=>{const n=+b.dataset.n;if(n===1)go('import');else if(n===2){if(S.busy||S.clips.length)go('analyze');else toast('Choose a video first.')}else{if(S.clips.length)go('review');else toast('The AI has to make clips first.')}});
+$('#kw').onclick=()=>go('set');$('#rv-go').onclick=()=>go('import');$('#tpost').onclick=()=>go('export');
+/* capabilities */
+async function caps(){const c=[];const add=(n,s)=>c.push(`<span class="chip ${s}">${n}</span>`);
+ add('Import from device','');add(window.AudioContext||window.webkitAudioContext?'Audio analysis':'Audio analysis unavailable',window.AudioContext||window.webkitAudioContext?'':'o');
+ add(pickMime()?'Clip encoder ('+pickMime().split(';')[0].split('/')[1]+')':'Clip encoder unavailable',pickMime()?'':'o');
+ add('canvas' in document.createElement('canvas')&&'filter' in CanvasRenderingContext2D.prototype?'Enhance and blur':'Enhance and blur unavailable','filter' in CanvasRenderingContext2D.prototype?'':'w');
+ add(window.indexedDB?'Saved library':'Saved library unavailable',window.indexedDB?'':'o');
+ add('Captions from .srt/.vtt','');if(NATIVE){add('Offline auto-captions with word timing','');add('Hardware MP4 export to Gallery','');add('Autonomous mode','')}else add(window.SpeechRecognition||window.webkitSpeechRecognition?'Auto-captions (browser speech engine)':'Auto-captions unavailable in this browser',window.SpeechRecognition||window.webkitSpeechRecognition?'w':'o');
+ const aiOn=!!(NATIVE&&aiOk());add(aiOn?'AI titles and ratings ('+(cfg.aiProv==='openrouter'?'OpenRouter':cfg.aiProv==='both'?'Gemini or OpenRouter':'Gemini')+')':'AI titles: optional, add a free Gemini or OpenRouter key in Settings','');
+ $('#caps').innerHTML=c.join('');$('#fm').textContent=NATIVE?'H.264 MP4 · 30 fps · saved to Gallery':(pickMime().split(';')[0]||'no encoder available')}
+/* import */
+const resetP=()=>{if(S.url)URL.revokeObjectURL(S.url);Object.assign(S,{clips:[],curve:[],sel:0});$('#tor').hidden=true};
+$('#vf').onchange=async e=>{const f=e.target.files[0];if(!f)return;resetP();S.file=f;S.url=URL.createObjectURL(f);vid.src=S.url;$('#go').disabled=true;$('#auto').disabled=true;
+ try{await new Promise((ok,no)=>{vid.onloadedmetadata=ok;vid.onerror=()=>no()});}catch{$('#vi').innerHTML='<div class="note">This browser can’t decode that file. Try an H.264 MP4 or a WebM.</div>';return}
+ S.dur=vid.duration;if(!isFinite(S.dur)||S.dur<5){$('#vi').innerHTML='<div class="note">The video is too short or its length can’t be read (minimum 5 seconds).</div>';return}
+ $('#vi').innerHTML=`<b>${esc(f.name)}</b><p>${fmt(S.dur)} long · ${vid.videoWidth}×${vid.videoHeight} · ${(f.size/1e6).toFixed(0)} MB</p>`+(f.size>1.5e9?'<div class="note">Very large file: audio decoding may fail, and the analysis would fall back to motion only.</div>':'');$('#go').disabled=false;$('#auto').disabled=false;tryRestore(f)};
+function parseSub(tx){const tm=s=>{const m=s.trim().match(/(?:(\d+):)?(\d+):(\d+)[.,](\d+)/);return m?(+(m[1]||0))*3600+ +m[2]*60+ +m[3]+ +('0.'+m[4]):NaN};const o=[];
+ tx.replace(/\r/g,'').split(/\n\n+/).forEach(b=>{const L=b.split('\n'),i=L.findIndex(l=>l.includes('-->'));if(i<0)return;const[a,c]=L[i].split('-->');const t=L.slice(i+1).join(' ').replace(/<[^>]+>/g,'').trim(),A=tm(a),B=tm(c);if(t&&!isNaN(A)&&!isNaN(B))o.push({a:A,b:B,t})});return o.flatMap(chunkCue)}
+$('#sf').onchange=async e=>{const f=e.target.files[0];if(!f)return;S.cues=parseSub(await f.text());$('#si').textContent=S.cues.length?S.cues.length+' caption lines loaded from '+f.name:'No captions found in that file. Use standard .srt or .vtt.'};
+/* ===== projects: autosave, recovery, rename, duplicate, delete (versioned, never overwritten silently) ===== */
+const PK='cfprj',PKB='cfprj.bak',PV=1;
+function prjRead(){for(const k of [PK,PKB]){try{const a=JSON.parse(localStorage.getItem(k)||'[]');if(Array.isArray(a))return a.filter(p=>p&&typeof p==='object'&&p.id)}catch(e){}}return[]}
+function prjWrite(a){try{const cur=localStorage.getItem(PK);if(cur)localStorage.setItem(PKB,cur);localStorage.setItem(PK,JSON.stringify(a));return true}catch(e){if(!prjWrite.warned){prjWrite.warned=1;toast('Not enough storage to autosave this project.')}return false}}
+let prjLast='';
+function prjSnapshot(){return JSON.stringify({clips:S.clips,cues:S.cues,sel:S.sel})}
+function prjAutosave(){if(!S.file||!S.pid||!(S.clips.length||S.cues.length))return;let snap;try{snap=prjSnapshot()}catch(e){return}if(snap===prjLast)return;
+ const a=prjRead(),i=a.findIndex(p=>p.id===S.pid),old=i>=0?a[i]:null;
+ const rec={v:PV,id:S.pid,name:old?old.name:S.file.name.replace(/\.[^.]+$/,'').slice(0,60),created:old?old.created:Date.now(),updated:Date.now(),video:{name:S.file.name,size:S.file.size,dur:S.dur},data:JSON.parse(snap)};
+ if(i>=0)a[i]=rec;else a.unshift(rec);if(prjWrite(a)){prjLast=snap;renderPrj()}}
+setInterval(prjAutosave,3000);addEventListener('pagehide',prjAutosave);document.addEventListener('visibilitychange',()=>{if(document.hidden)prjAutosave()});
+const ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'};
+function renderPrj(){const a=prjRead().sort((x,y)=>y.updated-x.updated),box=$('#prj');if(!box)return;box.hidden=!a.length;
+ $('#prjl').innerHTML=a.map((p,i)=>`<div class="note" style="margin:8px 0" data-id="${p.id}"><b>${esc(p.name)}</b>${i===0?' · latest':''}<p>${p.data&&p.data.clips?p.data.clips.length:0} clips · ${ago(p.updated)} · needs the video “${esc(p.video&&p.video.name||'video')}”${p.v>PV?' · made by a newer version, can’t be opened here (it is kept safe)':''}</p><div class="row"><button data-a="open"${p.v>PV?' disabled':''}>${i===0?'Continue':'Open'}</button><button data-a="ren">Rename</button><button data-a="dup">Duplicate</button><button data-a="del">Delete</button></div></div>`).join('')}
+$('#prjl').onclick=e=>{const b=e.target.closest('button'),row=e.target.closest('[data-id]');if(!b||!row)return;const id=+row.dataset.id,a=prjRead(),i=a.findIndex(p=>p.id===id);if(i<0)return;const p=a[i],act=b.dataset.a;
+ if(act==='open'){S.restore=id;toast('Choose the video “'+(p.video&&p.video.name||'')+'” to continue.');$('#vf').click()}
+ else if(act==='dup'){const c=JSON.parse(JSON.stringify(p));c.id=Date.now();c.name=(p.name+' copy').slice(0,60);c.created=c.updated=Date.now();a.unshift(c);prjWrite(a);renderPrj()}
+ else if(act==='del'){if(b.dataset.arm){a.splice(i,1);prjWrite(a);renderPrj()}else{b.dataset.arm='1';b.textContent='Tap again to delete';setTimeout(()=>{if(b.isConnected){delete b.dataset.arm;b.textContent='Delete'}},3000)}}
+ else if(act==='ren'){const inp=document.createElement('input');inp.type='text';inp.value=p.name;inp.maxLength=60;row.querySelector('b').replaceWith(inp);b.textContent='Save';b.dataset.a='ren2';inp.focus()}
+ else if(act==='ren2'){const v=row.querySelector('input').value.trim().slice(0,60);if(v){p.name=v;p.updated=Date.now();prjWrite(a)}renderPrj()}};
+function tryRestore(f){const id=S.restore;S.restore=null;
+ if(!id){S.pid=Date.now();prjLast='';return}
+ const p=prjRead().find(q=>q.id===id);if(!p||p.v!==PV||!p.data){S.pid=Date.now();prjLast='';return}
+ const v=p.video||{},same=(v.name===f.name||v.size===f.size)&&Math.abs((v.dur||0)-S.dur)<1.5;
+ if(!same){S.pid=Date.now();prjLast='';toast('That video doesn’t match this project, so nothing was restored.');return}
+ S.pid=p.id;S.clips=Array.isArray(p.data.clips)?p.data.clips:[];S.cues=Array.isArray(p.data.cues)?p.data.cues:[];S.sel=Math.min(+p.data.sel||0,Math.max(0,S.clips.length-1));prjLast=prjSnapshot();
+ toast('Project restored: '+p.name);if(S.clips.length){try{go('review')}catch(e){go('import')}}}
+renderPrj();
+/* ===== subtitles: pure edit functions (tested) + editor view ===== */
+const subClean=t=>String(t).replace(/\s+/g,' ').trim().slice(0,200);
+function subWords(t,a,b,old){const ws=subClean(t).split(' ').filter(Boolean);if(!ws.length)return[];
+ if(old&&old.length===ws.length&&old[old.length-1][2]>old[0][1]){const oa=old[0][1],k=(b-a)/(old[old.length-1][2]-oa);return ws.map((w,i)=>[w,+(a+(old[i][1]-oa)*k).toFixed(3),+(a+(old[i][2]-oa)*k).toFixed(3)])}
+ const tot=ws.reduce((s,w)=>s+w.length+1,0);let x=a;return ws.map(w=>{const d=(b-a)*(w.length+1)/tot,r=[w,+x.toFixed(3),+(x+d).toFixed(3)];x+=d;return r})}
+function subUpdate(cues,i,p,dur){const q=cues[i];if(!q)return cues;let a=p.a!==undefined?+p.a:q.a,b=p.b!==undefined?+p.b:q.b;const t=p.t!==undefined?subClean(p.t):q.t;
+ if(!isFinite(a)||!isFinite(b)||!t)return cues;a=Math.max(0,a);if(dur&&a>dur-0.2)a=Math.max(0,dur-0.2);if(b-a<0.2)b=a+0.2;if(dur)b=Math.min(b,dur);if(b-a<0.1)return cues;
+ const n=cues.slice();n[i]={a:+a.toFixed(3),b:+b.toFixed(3),t,w:subWords(t,a,b,q.w)};return n.sort((x,y)=>x.a-y.a)}
+function subSplit(cues,i,at){const q=cues[i];if(!q)return cues;const ws=q.w&&q.w.length?q.w:subWords(q.t,q.a,q.b);if(ws.length<2)return cues;
+ let k=at===undefined?-1:ws.findIndex(w=>w[1]>=at);if(k<=0)k=Math.floor(ws.length/2);const cut=ws[k][1];if(cut-q.a<0.1||q.b-cut<0.1)return cues;
+ const A={a:q.a,b:+cut.toFixed(3),t:ws.slice(0,k).map(w=>w[0]).join(' '),w:ws.slice(0,k)},B={a:+cut.toFixed(3),b:q.b,t:ws.slice(k).map(w=>w[0]).join(' '),w:ws.slice(k)};
+ const n=cues.slice();n.splice(i,1,A,B);return n}
+function subMerge(cues,i){const q=cues[i],r=cues[i+1];if(!q||!r)return cues;const wa=q.w&&q.w.length?q.w:subWords(q.t,q.a,q.b),wb=r.w&&r.w.length?r.w:subWords(r.t,r.a,r.b);
+ const m={a:Math.min(q.a,r.a),b:Math.max(q.b,r.b),t:subClean(q.t+' '+r.t),w:wa.concat(wb)};const n=cues.slice();n.splice(i,2,m);return n}
+function subAdd(cues,at,dur){const a=Math.max(0,+at||0),b=dur?Math.min(a+2,dur):a+2;if(b-a<0.2)return cues;return cues.concat([{a:+a.toFixed(3),b:+b.toFixed(3),t:'New line',w:subWords('New line',a,b)}]).sort((x,y)=>x.a-y.a)}
+function subRemove(cues,i){if(!cues[i])return cues;const n=cues.slice();n.splice(i,1);return n}
+function subShift(cues,dt,dur){if(!cues.length||!isFinite(dt))return cues;const lo=Math.min(...cues.map(q=>q.a));if(lo+dt<0)dt=-lo;if(dur){const hi=Math.max(...cues.map(q=>q.b));if(hi+dt>dur)dt=dur-hi}
+ const r=v=>+(v+dt).toFixed(3);return cues.map(q=>({a:r(q.a),b:r(q.b),t:q.t,w:(q.w||[]).map(w=>[w[0],r(w[1]),r(w[2])])}))}
+const stamp=n=>{const h=Math.floor(n/3600),m=Math.floor(n%3600/60),s=Math.floor(n%60);return[h,m,s].map(v=>String(v).padStart(2,'0')).join(':')+','+String(Math.round(n%1*1000)).padStart(3,'0')};
+function subToSrt(cues){return cues.map((q,i)=>`${i+1}\n${stamp(q.a)} --> ${stamp(q.b)}\n${q.t}\n`).join('\n')}
+/*end subtitles pure*/
+function subVisible(){const c=S.clips[S.sel],only=$('#sub-only')&&$('#sub-only').checked&&c;return S.cues.map((q,i)=>({q,i})).filter(o=>!only||(o.q.b>c.s&&o.q.a<c.e))}
+function renderSub(){const el=$('#sub-list');if(!el)return;const v=subVisible();
+ el.innerHTML=v.length?v.slice(0,300).map(({q,i})=>`<div class="card" data-i="${i}"><div class="row"><input type="number" step="0.1" min="0" value="${q.a.toFixed(2)}" data-f="a" style="width:90px"><input type="number" step="0.1" min="0" value="${q.b.toFixed(2)}" data-f="b" style="width:90px"><button data-a="play">▶</button></div><input type="text" value="${esc(q.t)}" data-f="t" maxlength="200" style="width:100%;margin-top:8px"><div class="row" style="margin-top:8px"><button data-a="split">Split</button><button data-a="merge">Merge with next</button><button data-a="del">Delete</button></div></div>`).join('')+(v.length>300?'<div class="note">Showing the first 300 lines. Turn on “Only the selected clip” to see the rest.</div>':''):'<div class="note">No caption lines here yet. Run Auto-caption, import an .srt, or add a line at the playhead.</div>'}
+function subApply(n){S.cues=n;renderSub()}
+$('#sub-list').onchange=e=>{const f=e.target.dataset.f,row=e.target.closest('[data-i]');if(!f||!row)return;subApply(subUpdate(S.cues,+row.dataset.i,{[f]:e.target.value},S.dur))};
+$('#sub-list').onclick=e=>{const b=e.target.closest('button'),row=e.target.closest('[data-i]');if(!b||!row)return;const i=+row.dataset.i,q=S.cues[i];if(!q)return;
+ if(b.dataset.a==='split')subApply(subSplit(S.cues,i,vid.currentTime>q.a&&vid.currentTime<q.b?vid.currentTime:undefined));
+ else if(b.dataset.a==='merge')subApply(subMerge(S.cues,i));
+ else if(b.dataset.a==='del')subApply(subRemove(S.cues,i));
+ else if(b.dataset.a==='play'){const k=S.clips.findIndex(c=>q.a>=c.s&&q.a<c.e);if(k>=0)S.sel=k;go('review');seek(Math.max(0,q.a-.3))}};
+$('#sub-imp').onclick=()=>$('#sf').click();
+$('#sub-exp').onclick=()=>S.cues.length?saveSrt():toast('There are no captions to export yet.');
+$('#sub-add').onclick=()=>subApply(subAdd(S.cues,vid.currentTime||0,S.dur));
+$('#sub-m').onclick=()=>subApply(subShift(S.cues,-0.1,S.dur));$('#sub-p').onclick=()=>subApply(subShift(S.cues,0.1,S.dur));
+$('#sub-only').onchange=renderSub;
+{const o=$('#sf').onchange;$('#sf').onchange=async e=>{await o(e);renderSub()}}
+/* analysis */
+const nz=a=>{const s=[...a].sort((p,q)=>p-q),m=s[Math.floor(s.length*.95)]||1;return Array.from(a,v=>Math.min(1,v/(m||1)))};
+const step=(id,st,m)=>{const l=$('#s-'+id);l.className=st;if(m)l.textContent=m};
+const bar=p=>{const n=Math.round(p*100);$('#pb').style.width=n+'%';$('#pp').textContent=n+'%'};
+
+/* ---- AI scan: native listening for any length, AI decides the high points (Gemini) ---- */
+const SCAN_CH=480;
+const jparse=t=>JSON.parse(String(t).replace(/^```(?:json)?|```$/g,'').trim());
+const hms=t=>{t=Math.max(0,Math.floor(t));const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return(h?h+':':'')+String(m).padStart(h?2:1,'0')+':'+String(s).padStart(2,'0')};
+async function withRetry(fn,say){for(let a=0;;a++){try{return await fn()}catch(e){const m=String(e&&e.message||e);if(/daily limit/i.test(m))throw e;if(a<3&&/rate|429|limit|quota|busy|overload|503|unavailable/i.test(m)){for(let s=65;s>0;s--){say('Waiting for the free AI limit to reset… '+s+'s');await new Promise(r=>setTimeout(r,1000))}continue}throw e}}}
+const gem=(system,user,schema)=>cfNative.call(s=>AndroidBridge.gemini(s),{prov:cfg.aiProv||'gemini',orModel:cfg.orModel||'auto',system,user,schema}).then(r=>jparse(r.text));
+
+/* ---- AI editor: looks at frames, reads the transcript and decides reframing, zoom punches, sound effects, hook and pacing ---- */
+const EDIT_SYS='You are a professional short-form video editor with these tools: reframe (crop a wide video to vertical around the subject), punch (a quick zoom-in), sfx (sound effects: impact, whoosh, riser, pop), hook (on-screen text), transition, beat-pulse, speed (speed ramps). You see 4 frames of the clip (at 10, 35, 60 and 85 percent) and the timed transcript; loudMoments are times of loud audio. Decide the edit: subjectX = for EACH frame in order, the horizontal centre of the main subject or face as a number from -1 (left edge) to 1 (right edge), 0 if unclear; punches = 3 to 8 times in seconds from the clip start for a zoom punch-in on an emphasised word, reaction or punchline, at least 1.5 s apart; sfx = at most 8 sound effects used only where they add impact (impact on reveals and punchlines, whoosh just before a punch, riser before a payoff, pop for small emphasis); hook = a scroll-stopping on-screen hook of at most 6 words; ramps = 0 to 3 speed changes {a, b, speed} in seconds from the clip start: slow motion (speed 0.5 to 0.8, 1 to 3 s long) on a punchline, reveal or reaction, and optionally a fast part (speed 1.3 to 2, up to 5 s) over a boring stretch such as walking or waiting; never in the first 1 s, never overlapping, and leave ramps empty when the clip does not need them; transition = fade or punch; beat = true if the clip is high energy; notes = one sentence explaining the main decisions. Use only times inside the clip.';
+const EDIT_SCHEMA={type:'object',properties:{subjectX:{type:'array',items:{type:'number'}},punches:{type:'array',items:{type:'number'}},sfx:{type:'array',items:{type:'object',properties:{t:{type:'number'},type:{type:'string'}},required:['t','type']}},ramps:{type:'array',items:{type:'object',properties:{a:{type:'number'},b:{type:'number'},speed:{type:'number'}},required:['a','b','speed']}},hook:{type:'string'},transition:{type:'string'},beat:{type:'boolean'},notes:{type:'string'}},required:['subjectX','punches','sfx','ramps','hook','transition','beat','notes']};
+async function aiEditClip(i,say){const c=S.clips[i],d=c.e-c.s,times=[.1,.35,.6,.85].map(f=>+(c.s+d*f).toFixed(2));
+ let fr=[];try{fr=(await cfNative.call(s=>AndroidBridge.frames(s),{times})).frames||[]}catch(e){}
+ const lines=S.cues.filter(q=>q.b>c.s&&q.a<c.e).map(q=>'['+(q.a-c.s).toFixed(1)+'s] '+q.t).join('\n').slice(0,6000);
+ const cv=S.curve||[],lv=[];for(let t=Math.floor(c.s);t<Math.min(c.e,cv.length);t++)lv.push([t,cv[t]||0]);lv.sort((p,q)=>q[1]-p[1]);const loud=[];for(const[t]of lv){if(loud.every(o=>Math.abs(o-t)>4))loud.push(t);if(loud.length>=6)break}
+ const user=JSON.stringify({clipSeconds:+d.toFixed(1),frames:fr.length,title:c.title,mood:c.mood,loudMoments:loud.sort((p,q)=>p-q).map(t=>+(t-c.s).toFixed(0)),transcript:lines});
+ const o=await withRetry(()=>cfNative.call(s=>AndroidBridge.gemini(s),{prov:cfg.aiProv||'gemini',orModel:cfg.orModel||'auto',system:EDIT_SYS,user,schema:EDIT_SCHEMA,images:fr}).then(r=>jparse(r.text)),say||(()=>{}));
+ const sx=(o.subjectX||[]).filter(v=>typeof v==='number'&&isFinite(v)).map(v=>Math.max(-1,Math.min(1,v))).sort((p,q)=>p-q);
+ if(fr.length&&sx.length)c.x=sx[Math.floor(sx.length/2)];
+ const pu=[];(o.punches||[]).filter(v=>typeof v==='number'&&v>=.6&&v<=d-.4).sort((p,q)=>p-q).forEach(v=>{if(!pu.length||v-pu[pu.length-1]>=1.4)pu.push(+v.toFixed(2))});c.punches=pu.slice(0,8);
+ const ok=['impact','whoosh','riser','pop'],sf=[];(o.sfx||[]).filter(e=>e&&ok.includes(e.type)&&typeof e.t==='number'&&e.t>=0&&e.t<=d-.2).sort((p,q)=>p.t-q.t).forEach(e=>{if(!sf.some(z=>z.type===e.type&&Math.abs(z.t-e.t)<.4))sf.push({t:+e.t.toFixed(2),type:e.type})});c.sfx=sf.slice(0,8);
+ c.ramps=cfg.ramps===false||!window.RoohuMotion?[]:RoohuMotion.cleanRamps(o.ramps,d);
+ if(o.hook&&String(o.hook).trim())c.hook=String(o.hook).trim().slice(0,60);
+ if(o.transition==='punch'||o.transition==='fade')c.trans=o.transition;
+ c.beat=!!o.beat;c.planNote=String(o.notes||'').slice(0,200);c.planned=true;
+ await trackFaces(c,say);return c}
+/* Face tracking (M24): the phone finds the face in about 1 picture per second, on the device. No Gemini limit used, nothing uploaded. */
+async function trackFaces(c,say){c.track=null;if(cfg.follow===false||!window.RoohuMotion||!NATIVE||c.mode==='fit')return;
+ try{if(say)say('Following the face…');const r=await cfNative.call(s=>AndroidBridge.faceTrack(s),{start:c.s,end:c.e,step:Math.max(.5,(c.e-c.s)/36)});
+  const b=RoohuMotion.buildTrack(r.track);if(b.ok){c.track=b.track;c.faceSeen=Math.round(b.coverage*100)}else c.faceSeen=Math.round((b.coverage||0)*100)}catch(e){c.track=null}}
+async function aiEditAll(ids,say){let n=0;for(const i of ids){say('AI editor is planning clip '+(n+1)+' of '+ids.length+'…');try{await aiEditClip(i,say);n++}catch(e){say('AI editor skipped clip '+(i+1)+': '+(e.message||e))}}return n}
+async function aiScan(){const say=m=>$('#alog').textContent=m,dur=Math.floor(S.dur),N=Math.ceil(dur/SCAN_CH),energy=new Float32Array(dur+2),cues=[];
+ step('aud','run');
+ let badParts=0,lastErr=null;
+ for(let k=0;k<N;k++){const a=k*SCAN_CH,b=Math.min(dur,a+SCAN_CH);bar(.55*k/N);
+  let r=null;
+  /* M28: one unreadable part no longer kills a 3-4 hour scan. Each part gets two tries, then it is skipped and the rest continues. */
+  for(let tryNo=0;tryNo<2&&!r;tryNo++){
+   try{r=await withRetry(()=>cfNative.call(s=>AndroidBridge.transcribe(s),{start:a,end:b,lang:cfg.lang,key:cfg.groq,energy:true},p=>say('Listening to part '+(k+1)+' of '+N+' ('+hms(a)+')… '+p+'%')),say)}
+   catch(e){const m=String(e&&e.message||e);
+    if(/no speech/i.test(m)){r={cues:[],energy:[]};break}
+    if(/daily limit|no video|pick the video|not enough free storage/i.test(m))throw e;
+    lastErr=e;if(tryNo===1){badParts++;say('Part '+(k+1)+' could not be read and was skipped: '+m)}}}
+  if(!r)continue;
+  (r.cues||[]).forEach(q=>cues.push(q));(r.energy||[]).forEach((v,i)=>{if(a+i<energy.length)energy[a+i]=v/1000})}
+ if(badParts>=N&&lastErr)throw lastErr;
+ if(badParts)toast(badParts+' part'+(badParts===1?'':'s')+' of the video could not be read and '+(badParts===1?'was':'were')+' skipped.');
+ S.cues=cues.sort((p,q)=>p.a-q.a);S.curve=Array.from(nz(energy.slice(0,dur)));
+ step('aud','ok','Listened to the whole video: '+cues.length+' lines');
+ if(!cues.length)throw new Error('The AI heard no speech. Check the spoken language in Settings.');
+ const en=nz(energy),loud=(a,b)=>{const v=[];for(let i=Math.floor(a);i<Math.min(b,dur);i++)v.push([i,en[i]]);v.sort((p,q)=>q[1]-p[1]);const out=[];for(const[i]of v){if(out.every(o=>Math.abs(o-i)>8))out.push(i);if(out.length>=10)break}return out.sort((p,q)=>p-q).map(hms)};
+ step('mot','run');const WIN=1200,cand=[],nW=Math.ceil(dur/WIN),maxLen=Math.min(60,Math.max(20,+cfg.len||30));
+ const SYS_A='You are a viral short-form editor (TikTok, Reels, Shorts) working from the transcript of a long video. Find the most engaging self-contained moments: big reactions, funny or shocking lines, stories with a payoff, strong opinions, emotional peaks. Each moment must make sense on its own, last 20 to '+maxLen+' seconds, start on a natural hook and end right after the payoff. Use only timestamps that appear in the transcript. loudMoments are times of loud audio, a hint for reactions. Return a JSON array of at most 5 objects {start,end,hook,score,why}, start and end in seconds, score 1 to 10.';
+ const SCH_A={type:'array',items:{type:'object',properties:{start:{type:'number'},end:{type:'number'},hook:{type:'string'},score:{type:'number'},why:{type:'string'}},required:['start','end','hook','score','why']}};
+ for(let w=0;w<nW;w++){const a=w*WIN,b=Math.min(dur,a+WIN);bar(.55+.25*w/nW);say('AI is reading minutes '+Math.floor(a/60)+' to '+Math.floor(b/60)+' ('+(w+1)+' of '+nW+')…');
+  const tr=S.cues.filter(q=>q.a>=a&&q.a<b).map(q=>'['+hms(q.a)+'] '+q.t).join('\n');if(tr.length<80)continue;
+  try{const o=await withRetry(()=>gem(SYS_A,JSON.stringify({from:hms(a),to:hms(b),loudMoments:loud(a,b),transcript:tr.slice(0,60000)}),SCH_A),say);
+   (Array.isArray(o)?o:[]).forEach(m=>{if(!m||typeof m!=='object')return;const[u0,u1]=RoohuClips.unrelative(m.start,m.end,a,b-a),f=RoohuClips.fitWindow(u0,u1,dur,15,maxLen);if(f)cand.push({s:f[0],e:f[1],hook:String(m.hook||''),score:+m.score||5,why:String(m.why||'')})})}catch(e){if(/daily limit/i.test(String(e&&e.message||e)))throw e;say('AI skipped one part: '+(e.message||e))}}
+ if(!cand.length)throw new Error('The AI found no strong moments. Try a different video.');
+ step('mot','ok','AI found '+cand.length+' candidate moments');step('rank','run');bar(.82);
+ const withE=cand.map((m,i)=>{let s=0,c=0;for(let t=Math.floor(m.s);t<Math.min(m.e,dur);t++){s+=en[t];c++}return Object.assign(m,{id:i,energy:c?+(s/c).toFixed(2):0,text:S.cues.filter(q=>q.b>m.s&&q.a<m.e).map(q=>q.t).join(' ').slice(0,700)})});
+ const want=Math.max(1,+cfg.n||5);say('AI is choosing the best '+want+' and planning each edit…');
+ const SYS_B='You are the lead editor. From the candidate moments, choose the '+want+' best for posting as separate short videos: varied, strongest hooks first, no overlapping times. For each, trim start and end to the best cut points (20 to '+maxLen+' seconds, stay inside or near the candidate), write a punchy title (max 8 words) and pick the mood (intense, upbeat or calm), a category (funny, reaction, story, hype, emotional, other) and a music style (funk, emotional, phonk). Return a JSON array of {id,start,end,title,mood,category,music,why}.';
+ const SCH_B={type:'array',items:{type:'object',properties:{id:{type:'integer'},start:{type:'number'},end:{type:'number'},title:{type:'string'},mood:{type:'string'},category:{type:'string'},music:{type:'string'},why:{type:'string'}},required:['id','start','end','title','mood','category','music','why']}};
+ let pick=[];try{const o=await withRetry(()=>gem(SYS_B,JSON.stringify({candidates:withE.map(m=>({id:m.id,start:m.s,end:m.e,score:m.score,energy:m.energy,hook:m.hook,why:m.why,text:m.text}))}),SCH_B),say);pick=Array.isArray(o)?o:[]}catch(e){say('AI ranking failed, using the top candidates: '+(e.message||e))}
+ if(!pick.length)pick=withE.slice().sort((p,q)=>q.score-p.score).slice(0,want).map(m=>({id:m.id,start:m.s,end:m.e,title:m.hook,mood:'upbeat',category:'other',music:'funk',why:m.why}));
+ /* M27: the AI's picks are fitted, never thrown away. Too-short or odd-looking times are stretched or fixed, and if the AI chose too few,
+  the best remaining candidates fill the gaps, so this step no longer fails with "could not plan usable clips". */
+ const clips=[],used=[],chosen=RoohuClips.chooseWindows(pick,withE,want,dur,15,maxLen);
+ for(const w of chosen){let s0=w.s,e0=w.e;const p=w.pick||{},src=w.fromPool||withE.find(m=>m.id===p.id)||{};
+  const cs=S.cues.filter(q=>q.b>s0-1&&q.a<s0+2).sort((x,y)=>Math.abs(x.a-s0)-Math.abs(y.a-s0))[0];if(cs&&Math.abs(cs.a-s0)<2.5)s0=Math.max(0,cs.a-.25);
+  const ce=S.cues.filter(q=>q.b>e0-2&&q.a<e0+1).sort((x,y)=>Math.abs(x.b-e0)-Math.abs(y.b-e0))[0];if(ce&&Math.abs(ce.b-e0)<2.5)e0=Math.min(dur,ce.b+.45);
+  const f=RoohuClips.fitWindow(s0,e0,dur,8,maxLen);if(!f)continue;s0=f[0];e0=f[1];if(used.some(u=>s0<u[1]&&e0>u[0]))continue;used.push([s0,e0]);
+  const mood=['intense','upbeat','calm'].includes(p.mood)?p.mood:'upbeat';
+  clips.push({s:s0,e:e0,score:Math.min(1,(+src.score||6)/10),mood,x:0,mode:'fill',enh:true,trans:'fade',capOn:true,music:'auto',title:String(p.title||src.hook||'Moment at '+hms(s0)).slice(0,60),category:String(p.category||'other'),why:String(p.why||src.why||''),aiStyle:String(p.music||'')})}
+ if(!clips.length)throw new Error('The AI could not plan usable clips. Try again.');
+ S.clips=clips.slice(0,want);S.sel=0;step('rank','ok','AI planned '+S.clips.length+' clips');bar(.9);
+ step('edit','run');const pn=await aiEditAll(S.clips.map((_,i)=>i),say);step('edit',pn?'ok':'warn',pn?'The AI planned the edit of '+pn+' clip'+(pn===1?'':'s'):'The AI could not plan the edits. Plan them in step 3.');bar(1);
+ say('Done. '+S.clips.length+' clips ready. '+S.clips[0].title+': '+S.clips[0].why);$('#tor').hidden=false;drawCurve()}
+$('#go').onclick=async()=>{if(S.busy||!S.file)return;
+ if(NATIVE){if(!cfg.groq||!aiOk()){go('set');toast('Add your free Groq key (to listen) and an AI key, Gemini or OpenRouter (to decide). The AI needs both.');return}
+  S.busy=true;go('analyze');bar(0);['aud','mot','rank','edit'].forEach(i=>step(i,''));$('#tor').hidden=true;$('#alog').textContent='';
+  try{await aiScan()}catch(e){$('#alog').textContent='AI scan failed: '+(e.message||e)}finally{S.busy=false}return}S.busy=true;go('analyze');bar(0);['aud','mot','rank','edit'].forEach(i=>step(i,''));$('#tor').hidden=true;$('#alog').textContent='';
+ try{const dur=S.dur,bins=Math.ceil(dur);let A=null;
+  step('aud','run');$('#alog').textContent='Decoding audio…';
+  try{const ac=new(window.AudioContext||webkitAudioContext)();const ab=await ac.decodeAudioData(await S.file.arrayBuffer());ac.close();const d=ab.getChannelData(0),sr=ab.sampleRate,r=new Float32Array(bins);
+   for(let i=0;i<bins;i++){let s=0,c=0;for(let j=Math.floor(i*sr),e=Math.min(d.length,Math.floor((i+1)*sr));j<e;j+=16){s+=d[j]*d[j];c++}r[i]=c?Math.sqrt(s/c):0}A=nz(r);step('aud','ok','Audio energy: done')}
+  catch(e){A=null;step('aud','warn','Audio energy: could not decode ('+(e.message||'file too large or unsupported')+'). Using motion only.')}
+  bar(.2);step('mot','run');const M=Math.min(160,Math.max(8,Math.floor(dur/3))),cv=document.createElement('canvas');cv.width=64;cv.height=36;const x=cv.getContext('2d',{willReadFrequently:true});
+  let prev=null;const mot=new Float32Array(M),cx=new Float32Array(M);
+  for(let k=0;k<M;k++){$('#alog').textContent='Scanning motion '+(k+1)+' / '+M;await seek(Math.min(dur-.1,(k+.5)*dur/M));x.drawImage(vid,0,0,64,36);const f=x.getImageData(0,0,64,36).data;
+   if(prev){let s=0,sx=0;for(let p=0;p<f.length;p+=4){const dd=Math.abs(f[p]-prev[p])+Math.abs(f[p+1]-prev[p+1])+Math.abs(f[p+2]-prev[p+2]);s+=dd;sx+=dd*((p/4)%64)}mot[k]=s;cx[k]=s?sx/s/31.5-1:0}prev=f;bar(.2+.7*k/M)}
+  step('mot','ok','Motion scan: done');step('rank','run');
+  const Mo=nz(mot),mb=i=>Math.min(M-1,Math.floor(i/dur*M)),sc=[],V=[];
+  for(let i=0;i<bins;i++){V[i]=A&&i?Math.abs(A[i]-A[i-1]):0}const Vn=nz(V);
+  for(let i=0;i<bins;i++)sc[i]=A?.5*A[i]+.2*Vn[i]+.3*Mo[mb(i)]:Mo[mb(i)];
+  const sm=sc.map((v,i)=>(sc[i-1]??v)*.25+v*.5+(sc[i+1]??v)*.25);S.curve=sm;
+  const w=Math.min(Math.min(60,cfg.len),bins),pre=[0];sm.forEach((v,i)=>pre[i+1]=pre[i]+v);const used=new Array(bins).fill(false);S.clips=[];
+  for(let n=0;n<cfg.n;n++){let best=-1,bs=-1;for(let s=0;s+w<=bins;s++){let ok=true;for(let j=s;j<s+w;j++)if(used[j]){ok=false;break}if(!ok)continue;const v=(pre[s+w]-pre[s])/w;if(v>bs){bs=v;best=s}}
+   if(best<0)break;let s0=best;if(A){let mn=9;for(let j=Math.max(0,best-3);j<=Math.min(bins-w,best+3);j++)if(!used[j]&&A[j]<mn){mn=A[j];s0=j}}
+   for(let j=Math.max(0,best-5);j<Math.min(bins,best+w+5);j++)used[j]=true;
+   let ma=0,sw=0,sxx=0;for(let j=s0;j<s0+w;j++){ma+=A?A[j]:Mo[mb(j)];const m=Mo[mb(j)];sw+=m;sxx+=m*cx[mb(j)]}ma/=w;
+   S.clips.push({s:s0,e:Math.min(dur,s0+w),score:bs,mood:ma>.55?'intense':ma>.3?'upbeat':'calm',x:Math.max(-1,Math.min(1,sw?sxx/sw:0)),mode:'fill',enh:true,trans:'fade',capOn:true,music:'auto',title:'Moment at '+fmt(s0)})}
+  step('rank','ok','Ranking clips: '+S.clips.length+' selected');bar(1);$('#alog').textContent=S.clips.length?'Done. Clips are ranked by score; reframing starts where the most motion happens.':'No clips could be selected.';S.sel=0;$('#tor').hidden=!S.clips.length;drawCurve();if(cfg.autoCap&&S.clips.length)await runCap(S.clips.map((_,i)=>i))
+ }catch(e){$('#alog').textContent='Analysis failed: '+(e.message||e)+'. Try a different file.'}finally{S.busy=false}};
+$('#tor').onclick=()=>go('review');
+function drawCurve(){$$('canvas.curve').forEach(c=>{const d=devicePixelRatio||1,W=c.width=c.clientWidth*d,H=c.height=c.clientHeight*d,x=c.getContext('2d');x.clearRect(0,0,W,H);if(!S.curve.length)return;const n=S.curve.length,bw=W/n;
+ S.clips.forEach((k,i)=>{x.fillStyle=i===S.sel?'rgba(255,143,63,.35)':'rgba(255,143,63,.14)';x.fillRect(k.s*bw,0,(k.e-k.s)*bw,H)});
+ x.fillStyle='#5FA9B5';S.curve.forEach((v,i)=>{const h=Math.max(2,v*(H-8));x.fillRect(i*bw,H-h,Math.max(1,bw-.5),h)})})}
+addEventListener('resize',drawCurve);
+/* audio graph */
+let AC,vg,mg,mon,dest,an,abuf,duckV=1;const level=()=>{if(!an)return 0;an.getByteTimeDomainData(abuf);let s=0;for(const v of abuf){const d=(v-128)/128;s+=d*d}return Math.sqrt(s/abuf.length)};const mel=new Audio();mel.loop=true;
+async function audio(){if(!AC){AC=new(window.AudioContext||webkitAudioContext)();const vs=AC.createMediaElementSource(vid);vg=AC.createGain();vs.connect(vg);an=AC.createAnalyser();an.fftSize=512;abuf=new Uint8Array(512);vg.connect(an);mon=AC.createGain();dest=AC.createMediaStreamDestination();vg.connect(mon);vg.connect(dest);mon.connect(AC.destination);const ms=AC.createMediaElementSource(mel);mg=AC.createGain();ms.connect(mg);mg.connect(mon);mg.connect(dest)}await AC.resume()}
+const track=c=>c.music==='none'?null:typeof c.music==='number'?S.tracks[c.music]:(cfg.autoMusic?autoTrack(c):null)||null;
+function setMusic(c){const t=track(c);if(t){if(mel.dataset.u!==t.url){mel.src=t.url;mel.dataset.u=t.url}}else{mel.pause();mel.removeAttribute('src');delete mel.dataset.u}mg.gain.value=cfg.vol/100;return t}
+async function playClip(){const c=S.clips[S.sel];if(!c)return;await audio();stopPlay();setMusic(c);if(vid.currentTime<c.s||vid.currentTime>=c.e-.1)await seek(c.s);mel.currentTime=0;vid.play();if(mel.src)mel.play().catch(()=>{})}
+function stopPlay(){vid.pause();mel.pause()}
+/* renderer */
+/* ---- caption helpers: every caption page carries per-word timing ---- */
+function evenW(q){const ws=q.t.split(/\s+/).filter(Boolean),d=(q.b-q.a)/Math.max(1,ws.length);return ws.map((w,i)=>[w,q.a+i*d,q.a+(i+1)*d])}
+function capWords(q){return(q.w&&q.w.length?q.w:evenW(q)).map(x=>({w:x[0],a:x[1],b:x[2]}))}
+function chunkCue(q){const ws=q.t.split(/\s+/).filter(Boolean);if(ws.length<=4)return[q];const n=Math.ceil(ws.length/4),per=Math.ceil(ws.length/n),d=(q.b-q.a)/ws.length,o=[];for(let k=0;k<ws.length;k+=per){const part=ws.slice(k,k+per);o.push({a:q.a+k*d,b:q.a+(k+part.length)*d,t:part.join(' ')})}return o}
+const capStyle=c=>cfg.cap==='auto'?'clean':cfg.cap;   // M27: Auto = the clean style (clear, readable, one lit word)
+function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+/* ---- clean edit text (matches the exported clip): flat heavy letters, soft shadow, neon glow on the spoken word ---- */
+const FAM=f=>f==='Poppins'||!f?'"Poppins XB",Poppins,Montserrat,Arial,sans-serif':`"${f}",Poppins,Arial,sans-serif`;
+function trackW(x,s,tr){let w=0;for(const ch of s)w+=x.measureText(ch).width+tr;return w-tr}
+function trackDraw(x,s,px,py,tr,mode){let p=px;for(const ch of s){if(mode==='s')x.strokeText(ch,p,py);else x.fillText(ch,p,py);p+=x.measureText(ch).width+tr}}
+function glowLine(x,s,px,py,fs,tr,face,glow,edge){x.save();x.lineJoin='round';
+ x.shadowColor=glow;x.shadowBlur=fs*.62;x.fillStyle=glow;for(let i=0;i<3;i++)trackDraw(x,s,px,py,tr,'f');
+ x.shadowBlur=0;x.lineWidth=fs*.07;x.strokeStyle=edge;trackDraw(x,s,px,py,tr,'s');x.fillStyle=face;trackDraw(x,s,px,py,tr,'f');x.restore()}
+const CAPCOL={clean:['#FFE14D','#FFE14D'],pop:['#FFF176','#FFC83D'],fire:['#FFC857','#FF5A1F'],ice:['#E4FBFF','#2EC8FF'],gold:['#FFFFFF','#FFD24D'],neon:['#E9FFFF','#00F0FF'],kara:['#FFF176','#FFC83D']};
+const CYC=['#39FF88','#FFE23D','#FF4FA3','#4FE3FF','#FF8F3F'],MRK=['#39FF5A','#FFE23D','#FF3B30'];
+
+/* sport style: small wide-spaced squared italic silver text, the spoken word lights up white with a cool glow */
+function drawCapSport(x,W,H,t,cue){const fs=W*.05,tr=fs*.16,wd=capWords(cue).map(o=>Object.assign({},o,{w:o.w.toUpperCase()}));
+ x.save();x.font=`400 ${fs}px Michroma,Orbitron,"Arial Black",sans-serif`;x.textBaseline='alphabetic';x.lineJoin='round';
+ let act=0;wd.forEach((o,i)=>{if(t>=o.a)act=i});const sp=fs*.9,ww=wd.map(o=>trackW(x,o.w,tr));
+ const lines=[[]];let lw=0;wd.forEach((o,i)=>{const L=lines[lines.length-1],add=(L.length?sp:0)+ww[i];if(L.length&&lw+add>W*.88){lines.push([i]);lw=ww[i]}else{L.push(i);lw+=add}});
+ const base=LK()==='neon'?H*.81:H*.68;
+ lines.forEach((L,li)=>{const tw=L.reduce((a,i,k)=>a+ww[i]+(k?sp:0),0),y=base+li*fs*1.7;let px=(W-tw)/2;
+  L.forEach(i=>{const on=i===act,p=Math.min(1,Math.max(0,(t-wd[i].a)/.14)),sc=on?1+.14*Math.sin(p*Math.PI):1,cx=px+ww[i]/2,cy=y-fs*.35;
+   x.save();x.translate(cx,cy);x.scale(sc,sc);x.transform(1,0,-.2,1,0,0);x.translate(-cx,-cy);
+   x.shadowColor='rgba(0,0,0,.75)';x.shadowBlur=fs*.2;x.shadowOffsetY=fs*.06;x.fillStyle='#000';trackDraw(x,wd[i].w,px,y,tr,'f');x.shadowColor='transparent';x.shadowOffsetY=0;
+   if(on){x.shadowColor='rgba(156,196,255,.9)';x.shadowBlur=fs*.7;x.fillStyle='#9CC4FF';trackDraw(x,wd[i].w,px,y,tr,'f');x.shadowBlur=0}
+   x.lineWidth=fs*.05;x.strokeStyle='rgba(10,15,26,.9)';trackDraw(x,wd[i].w,px,y,tr,'s');
+   const g=x.createLinearGradient(0,y-fs*.8,0,y+fs*.05);g.addColorStop(0,on?'#FFFFFF':'#E8EDF8');g.addColorStop(1,on?'#DDE8FF':'#8E9BB8');x.fillStyle=g;trackDraw(x,wd[i].w,px,y,tr,'f');x.restore();
+   px+=ww[i]+sp})});x.restore()}
+function drawCap(x,W,H,t,c){const cue=S.cues.find(q=>t>=q.a-.02&&t<=q.b+.25);if(!cue)return;const st=capStyle(c);if(st==='sport'){drawCapSport(x,W,H,t,cue);return}const fs=W*(st==='clean'?.076:.07),wd=capWords(cue);
+ x.save();x.font=`800 ${fs}px ${FAM(capFont(c))}`;x.textBaseline='alphabetic';x.textAlign='left';x.lineJoin='round';
+ let act=0;wd.forEach((o,i)=>{if(t>=o.a)act=i});const sp=Math.max(x.measureText(' ').width,fs*.28),ww=wd.map(o=>x.measureText(o.w).width);
+ const lines=[[]];let lw=0;wd.forEach((o,i)=>{const L=lines[lines.length-1],add=(L.length?sp:0)+ww[i];if(L.length&&lw+add>W*.88){lines.push([i]);lw=ww[i]}else{L.push(i);lw+=add}});
+ const base=LK()==='neon'?H*.81:H*.68;
+ lines.forEach((L,li)=>{const tw=L.reduce((a,i,k)=>a+ww[i]+(k?sp:0),0),y=base+li*fs*1.3;let px=(W-tw)/2;
+  if(st==='bar'){x.fillStyle='rgba(0,0,0,.7)';rr(x,px-fs*.4,y-fs*.95,tw+fs*.8,fs*1.3,fs*.3);x.fill()}
+  L.forEach(i=>{const o=wd[i],on=i===act,hide=(st==='reveal'||st==='hype')&&i>act;
+   if(!hide){const p=Math.min(1,Math.max(0,(t-o.a)/.14)),sc=on?1+(st==='clean'?.07:.24)*Math.sin(p*Math.PI):1,cx=px+ww[i]/2,cy=y-fs*.3;
+    x.save();x.translate(cx,cy);x.scale(sc,sc);x.translate(-cx,-cy);
+    let top='#fff',bot='#EDEDED',gl=null;
+    if(on||(st==='kara'&&i<=act)){const k=st==='hype'?CYC[i%5]:st==='mark'?MRK[i%3]:null;const pc=CAPCOL[st]||CAPCOL.pop;top=k||pc[0];bot=k||pc[1];gl=st==='clean'?null:(k||pc[1])}
+    x.shadowColor='rgba(0,0,0,.7)';x.shadowBlur=fs*.12;x.shadowOffsetY=fs*.05;x.fillStyle='#000';x.fillText(o.w,px,y);x.shadowColor='transparent';x.shadowOffsetY=0;
+    if(gl&&on){x.shadowColor=gl;x.shadowBlur=fs*.42;x.fillStyle=gl;x.fillText(o.w,px,y);x.fillText(o.w,px,y);x.shadowBlur=0}
+    if(st!=='bar'){x.lineWidth=fs*(st==='clean'?.17:.10);x.strokeStyle='rgba(0,0,0,.9)';x.strokeText(o.w,px,y)}
+    const g=x.createLinearGradient(0,y-fs*.8,0,y+fs*.05);g.addColorStop(0,top);g.addColorStop(1,bot);x.fillStyle=g;x.fillText(o.w,px,y);x.restore()}
+   px+=ww[i]+sp})});x.restore()}
+/* neon story title, typed in letter by letter (yellow line, green line), like the reference edit */
+function neonSplit(s){s=(s||'').trim().toUpperCase();if(s.length>40)s=s.slice(0,39).trim()+'…';if(!s)return['',''];const w=s.split(/\s+/);if(w.length<2)return['',s];let best=1,bd=1e9;for(let i=1;i<w.length;i++){const d=Math.abs(w.slice(0,i).join(' ').length-w.slice(i).join(' ').length);if(d<bd){bd=d;best=i}}return[w.slice(0,best).join(' '),w.slice(best).join(' ')]}
+function drawNeon(x,W,H,rel,c){const END=4.6,START=.25;if(rel<START||rel>END)return;const[l1,l2]=neonSplit(c.title);if(!l1&&!l2)return;
+ let fs=W*.075;x.save();x.textBaseline='alphabetic';const tr0=.04;
+ for(let i=0;i<30;i++){x.font=`800 ${fs}px ${FAM('Poppins')}`;if(Math.max(trackW(x,l1,fs*tr0),trackW(x,l2,fs*tr0))<=W*.9)break;fs*=.93}
+ const tr=fs*tr0,n=Math.floor((rel-START)*16)+1,n1=Math.min(n,l1.length),n2=Math.max(0,n-l1.length),y1=H*.6-fs*.1,y2=y1+fs*1.22;
+ x.globalAlpha=rel>END-.4?Math.max(0,(END-rel)/.4):1;
+ if(n1>0)glowLine(x,l1.slice(0,n1),(W-trackW(x,l1,tr))/2,y1,fs,tr,'#FFF35C','#FFE600','#5A4A00');
+ if(n2>0)glowLine(x,l2.slice(0,n2),(W-trackW(x,l2,tr))/2,l1?y2:y1,fs,tr,'#5CFF6E','#14FF2E','#04450C');x.restore()}
+/* editor credit: one clean glowing line, colour cycles like the reference edit */
+const CRPAL=[['#E6ECFF','#8E9BC4','rgba(127,144,216,.7)'],['#FFF86B','#FFD000','rgba(255,212,0,.8)'],['#FFFFFF','#D9E4FF','rgba(191,212,255,.7)']];
+function wm(x,W,H,rel){rel=rel||0;let fs=W*.046*cfg.wmSize/100;const T='ROOHU X KHAN';x.save();x.textBaseline='alphabetic';
+ let tr=fs*.16;for(let i=0;i<30;i++){x.font=`800 ${fs}px ${FAM('Poppins')}`;tr=fs*.16;if(trackW(x,T,tr)<=W*.8)break;fs*=.94}
+ const tw=trackW(x,T,tr),inn=Math.min(1,rel/.5),pos=cfg.wmPos,react=LK()==='react',pal=CRPAL[Math.floor(rel/1.6)%3],bob=Math.sin(rel*2.2)*H*.002;
+ const px=react||pos==='mc'?(W-tw)/2:pos[1]==='l'?W*.04:W-W*.04-tw,py=(react?H*.9:pos==='mc'?H*.71:(pos[0]==='t'?H*.09:H*.94))+bob;
+ x.globalAlpha=Math.max(.5,cfg.wmOp/100)*inn;x.lineJoin='round';
+ x.shadowColor=pal[2];x.shadowBlur=fs*.55;x.fillStyle=pal[2];trackDraw(x,T,px,py,tr,'f');x.shadowBlur=0;
+ x.lineWidth=fs*.09;x.strokeStyle='rgba(0,0,0,.8)';trackDraw(x,T,px,py,tr,'s');
+ const g=x.createLinearGradient(0,py-fs*.75,0,py+fs*.05);g.addColorStop(0,pal[0]);g.addColorStop(1,pal[1]);x.fillStyle=g;trackDraw(x,T,px,py,tr,'f');x.restore()}
+function draw(x,W,H,c,t){const vw=vid.videoWidth,vh=vid.videoHeight;if(!vw)return;const D=c.e-c.s,rel=Math.max(0,t-c.s);x.save();x.fillStyle='#000';x.fillRect(0,0,W,H);
+ if(cfg.duck&&mg&&mel.src){duckV+=((level()>.04?.35:1)-duckV)*.08;mg.gain.value=cfg.vol/100*duckV}let z=c.trans==='punch'&&rel<.6?1+.14*(1-rel/.6):1;if(c.beat)z*=1+Math.min(.08,level()*.3);x.translate(W/2,H/2);x.scale(z,z);x.translate(-W/2,-H/2);const en=c.enh?'contrast(1.1) saturate(1.2) brightness(1.03)':'none';
+ const sw=Math.min(vw,vh*9/16),sh=sw*16/9,sy=(vh-sh)/2;
+ if(c.mode==='fit'){x.filter='blur(28px) brightness(.55)';x.drawImage(vid,(vw-sw)/2,sy,sw,sh,-40,-40,W+80,H+80);x.filter=en;const h=W*vh/vw;x.drawImage(vid,0,(H-h)/2,W,h)}
+ else{x.filter=en;let px=c.x;if(c.track&&cfg.follow!==false&&window.RoohuMotion){const fx=RoohuMotion.trackAt(c.track,rel);if(fx!==null)px=RoohuMotion.previewX(fx,sw/vw)}x.drawImage(vid,(vw-sw)*(px+1)/2,sy,sw,sh,0,0,W,H)}
+ x.filter='none';x.restore();
+ if(c.enh){const g=x.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.75);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.35)');x.fillStyle=g;x.fillRect(0,0,W,H)}
+ if(cfg.capOn&&c.capOn&&S.cues.length)drawCap(x,W,H,t,c);
+ if(LK()==='neon')drawNeon(x,W,H,rel,c);
+ if(c.trans==='fade'){const a=Math.min(1,Math.max(0,1-rel/.4,1-(D-rel)/.4));if(a>0){x.fillStyle=`rgba(0,0,0,${a})`;x.fillRect(0,0,W,H)}}
+ if(cfg.prog){x.fillStyle='rgba(255,255,255,.25)';x.fillRect(0,H*.012,W,H*.006);x.fillStyle='#FF8F3F';x.fillRect(0,H*.012,W*Math.min(1,rel/D),H*.006)}
+ wm(x,W,H,rel)}
+/* review */
+function showReview(){const has=S.clips.length>0;$('#rv-empty').hidden=has;$('#rv-main').hidden=!has;if(!has)return;$('#ts').max=$('#te').max=Math.floor(S.dur);renderClips();syncCtl();drawCurve();seek(S.clips[S.sel].s);loop()}
+let raf=0;function loop(){cancelAnimationFrame(raf);const f=()=>{if(S.view!=='review'||exporting)return;const c=S.clips[S.sel];if(c){draw($('#pv').getContext('2d'),360,640,c,vid.currentTime);if(!vid.paused&&vid.currentTime>=c.e)stopPlay()}raf=requestAnimationFrame(f)};f()}
+function renderClips(){const el=$('#cl');el.innerHTML=S.clips.map((c,i)=>`<button class="cc ${i===S.sel?'on':''}" data-i="${i}"><span class="no">${i+1}</span><b>${esc(c.title)}</b><span>${fmt(c.s)}–${fmt(c.e)} · ${Math.round(c.e-c.s)}s · ${esc(c.mood)}</span><span>${c.planned?'✓ edit planned':'edit not planned'}</span></button>`).join('');
+ el.onclick=e=>{const b=e.target.closest('.cc');if(b){S.sel=+b.dataset.i;stopPlay();renderClips();syncCtl();drawCurve();seek(S.clips[S.sel].s)}}}
+function renderPlan(){const el=$('#aipb'),c=S.clips[S.sel];if(!el||!c)return;
+ if(!c.planned){el.innerHTML='<p>The AI has not planned this clip yet. Tap <b>Plan again with AI</b>. It looks at 4 pictures of the clip and decides the zooms, sound effects and hook.</p>';return}
+ const z=(c.punches||[]).length,s=(c.sfx||[]).length;
+ el.innerHTML='<div class="pills"><span class="pill">🎣 '+esc(c.hook||'no hook')+'</span><span class="pill">🔍 '+z+' zoom'+(z===1?'':'s')+'</span><span class="pill">🔊 '+s+' sound'+(s===1?'':'s')+'</span><span class="pill">'+(c.trans==='punch'?'⚡ punch transition':c.trans==='fade'?'🌅 fade transition':'no transition')+'</span>'+(c.beat?'<span class="pill">🥁 beat pulse</span>':'')+(c.track?'<span class="pill">🎯 follows the face</span>':'')+((c.ramps||[]).length?'<span class="pill">🎞 '+c.ramps.length+' speed ramp'+(c.ramps.length===1?'':'s')+'</span>':'')+'</div>'+(c.planNote?'<p>'+esc(c.planNote)+'</p>':'')}
+const PAGES={import:1,analyze:2,review:3,sub:3,export:3};
+function createTarget(){if(S.busy)return 'analyze';const l=S.lc||'import';if(['review','sub','export'].includes(l)&&!S.clips.length)return 'import';if(l==='analyze'&&!S.clips.length)return 'import';return l}
+function keyWarn(){const w=$('#keywarn');if(w)w.hidden=!(NATIVE&&(!cfg.groq||!aiOk()))}
+function paintNav(v){const idx=PAGES[v]||0,has=S.clips.length>0;if(idx)S.lc=v;
+ $$('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.v==='create'?!!idx:b.dataset.v===v));
+ $('#stepper').hidden=!idx;
+ $$('.st').forEach(b=>{const n=+b.dataset.n;b.classList.toggle('on',n===idx);b.classList.toggle('done',n!==idx&&((n===1&&!!S.file)||(n===2&&has)||(n===3&&false)))});
+ $('#stl1').classList.toggle('done',!!S.file&&idx>1);$('#stl2').classList.toggle('done',has&&idx>2);
+ $('#seg').hidden=!['review','sub','export'].includes(v);$$('#seg button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+ if(v==='import')keyWarn()}
+function syncCtl(){const c=S.clips[S.sel];if(!c)return;$('#ts').value=c.s;$('#te').value=c.e;$('#tso').textContent=fmt(c.s);$('#teo').textContent=fmt(c.e)+' ('+Math.round(c.e-c.s)+'s)';$('#md').value=c.mode;$('#px').value=Math.round(c.x*100);$('#en').checked=c.enh;$('#tr').value=c.trans;$('#cp').checked=c.capOn;$('#cp').disabled=!S.cues.length;$('#bt').checked=!!c.beat;renderCE();
+ $('#mu').innerHTML='<option value="auto">Auto (match mood: '+c.mood+')</option><option value="none">No music</option>'+S.tracks.map((t,i)=>`<option value="${i}">${esc(t.name)} (${t.mood})</option>`).join('');$('#mu').value=c.music;renderPlan()}
+const cur=()=>S.clips[S.sel];
+$('#ts').oninput=e=>{const c=cur();c.s=Math.min(+e.target.value,c.e-3);if(c.e-c.s>60)c.e=c.s+60;syncCtl();drawCurve()};
+$('#te').oninput=e=>{const c=cur();c.e=Math.max(+e.target.value,c.s+3);if(c.e-c.s>60)c.s=c.e-60;syncCtl();drawCurve()};
+$('#ts').onchange=$('#te').onchange=()=>{stopPlay();seek(cur().s);renderClips()};
+$('#md').onchange=e=>cur().mode=e.target.value;$('#px').oninput=e=>cur().x=e.target.value/100;$('#en').onchange=e=>cur().enh=e.target.checked;$('#tr').onchange=e=>cur().trans=e.target.value;$('#cp').onchange=e=>cur().capOn=e.target.checked;
+$('#mu').onchange=e=>{const v=e.target.value;cur().music=v==='auto'||v==='none'?v:+v};
+$('#pl').onclick=playClip;$('#ps').onclick=stopPlay;$('#ex1').onclick=()=>{go('export');runExport([S.sel])};
+const DIRECTOR_SYS='You are an assistant for a short-form video editor. You receive candidate clips, each with an index i and the transcript text spoken in it. For EVERY clip reply with: i (same index), title (at most 8 words, in the language of the transcript, only what the transcript supports, no clickbait lies), hook (integer 1 to 10 for how engaging the opening words are as a hook), why (one short sentence that points at what is said), mood (intense, upbeat or calm, judged from the speech), category (gaming, podcast, interview, movie, sports, vlog, tutorial, reaction, documentary or general) and captionStyle (pop, fire, gold, ice, neon, hype or reveal) and postCaption (a catchy social post caption of at most 150 characters in the transcript language, then 3 to 5 relevant hashtags; only what the transcript supports, no false claims). Never predict views or virality. Reply with JSON only.';
+const DIRECTOR_SCHEMA={type:'array',items:{type:'object',properties:{i:{type:'integer'},title:{type:'string'},hook:{type:'integer'},why:{type:'string'},mood:{type:'string',enum:['intense','upbeat','calm']},category:{type:'string',enum:['gaming','podcast','interview','movie','sports','vlog','tutorial','reaction','documentary','general']},captionStyle:{type:'string',enum:['pop','fire','gold','ice','neon','hype','reveal']},postCaption:{type:'string'}},required:['i','title','hook','why','mood']}};
+async function aiDirect(silent){
+ if(!NATIVE||!window.AndroidBridge||!window.RoohuValidate){if(!silent)toast('AI titles work in the phone app.');return 0}
+ if(!aiOk()){if(!silent)toast('Paste a free Gemini or OpenRouter key in Settings first.');return 0}
+ const data=S.clips.map((c,i)=>({i,start:+c.s.toFixed(1),end:+c.e.toFixed(1),text:S.cues.filter(q=>q.b>c.s&&q.a<c.e).map(q=>q.t).join(' ').slice(0,1500)})).filter(d=>d.text);
+ if(!data.length){if(!silent)toast('Add captions first. The AI works from the transcript.');return 0}
+ const b=$('#ai');if(b){b.disabled=true;b.textContent='Asking Gemini…'}
+ try{const r=await cfNative.call(s=>AndroidBridge.gemini(s),{prov:cfg.aiProv||'gemini',orModel:cfg.orModel||'auto',system:DIRECTOR_SYS,user:'Clips: '+JSON.stringify(data),schema:DIRECTOR_SCHEMA});
+  const p=RoohuValidate.parseAiJson(r.text);if(!p.ok)throw new Error('The AI answer could not be read ('+p.error+').');
+  const v=RoohuValidate.validateDirector(p.items,S.clips.length);
+  v.accepted.forEach(o=>{const c=S.clips[o.i];c.title=o.title;if(o.hook)c.hook=o.hook;c.why=o.why;if(o.mood)c.mood=o.mood;if(o.captionStyle)c.capStyle=o.captionStyle;c.category=o.category;if(o.postCaption){c.post=o.postCaption;c.tags=o.hashtags||[]}});
+  renderClips();if(!silent)toast(v.accepted.length+' clips titled by AI'+(v.rejected.length?' ('+v.rejected.length+' answers ignored as invalid)':''));return v.accepted.length}
+ catch(e){if(!silent)toast('AI request failed: '+(e.message||'unknown error'));else toast('AI titles skipped: '+(e.message||'error'));return 0}
+ finally{if(b){b.disabled=false;b.textContent='Title and rate with AI'}}}
+$('#ai').onclick=()=>aiDirect(false);
+$('#aiedit').onclick=async()=>{if(!NATIVE||!aiOk()){toast('This needs the phone app and a Gemini or OpenRouter key.');return}const b=$('#aiedit'),c=S.clips[S.sel];if(!c)return;b.disabled=true;b.textContent='AI editor working…';
+ try{await aiEditClip(S.sel,m=>toast(m));renderPlan();renderClips();toast('Edit planned: '+c.punches.length+' zooms, '+c.sfx.length+' sound effects. '+c.planNote)}catch(e){toast('AI editor failed: '+(e.message||e))}finally{b.disabled=false;b.textContent='Plan again with AI'}};
+/* export + library */
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open('clipforge',1);r.onupgradeneeded=()=>r.result.createObjectStore('clips',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const tx=async(m,fn)=>{const d=await idb();return new Promise((res,rej)=>{const t=d.transaction('clips',m),r=fn(t.objectStore('clips'));t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)})};
+let exporting=false,cancel=false;
+function renderExp(){const el=$('#el');if(!S.clips.length){el.innerHTML='<p>No clips yet. Run the analysis first.</p>';return}el.innerHTML=S.clips.map((c,i)=>`<div class="row" style="margin:8px 0"><span style="flex:1"><b>${esc(c.title)}</b> <span style="color:var(--mu)">${fmt(c.s)}–${fmt(c.e)}</span></span><button data-x="${i}">Export</button></div>`).join('');el.onclick=e=>{const b=e.target.closest('[data-x]');if(b)runExport([+b.dataset.x])}}
+$('#exa').onclick=()=>S.clips.length?runExport(S.clips.map((_,i)=>i)):toast('No clips to export yet.');$('#exc').onclick=()=>{cancel=true;if(NATIVE)try{AndroidBridge.cancelExport()}catch(e){}};
+
+/* AI picks the song for each clip from the user's saved songs (mood, topic and what is said), varying across clips */
+async function aiAssignMusic(ids){if(!(NATIVE&&aiOk()&&cfg.autoMusic&&S.tracks.length>1))return;
+ const cl=ids.map(i=>S.clips[i]).filter(c=>c&&(c.music==='auto'||c.music==null)&&!c.aiMusic);if(!cl.length)return;
+ const data={clips:cl.map(c=>({id:S.clips.indexOf(c),title:c.title,mood:c.mood,speech:S.cues.filter(q=>q.b>c.s&&q.a<c.e).map(q=>q.t).join(' ').slice(0,500)})),tracks:S.tracks.map((t,i)=>({id:i,name:t.name,style:t.mood}))};
+ try{$('#xs').textContent='AI is choosing songs for your clips…';
+  const r=await cfNative.call(s=>AndroidBridge.gemini(s),{prov:cfg.aiProv||'gemini',orModel:cfg.orModel||'auto',system:'You are a video editor choosing background songs. For each clip choose the one track whose style best fits its mood, topic and speech. Use different tracks across clips when several fit. Reply with JSON only: an array of {clip, track, why} using ids from the input.',user:JSON.stringify(data),schema:{type:'array',items:{type:'object',properties:{clip:{type:'integer'},track:{type:'integer'},why:{type:'string'}},required:['clip','track','why']}}});
+  const a=JSON.parse(String(r.text).replace(/^```(?:json)?|```$/g,'').trim());
+  if(Array.isArray(a))a.forEach(o=>{const c=S.clips[o.clip];if(c&&cl.includes(c)&&S.tracks[o.track]){c.music=o.track;c.aiMusic=String(o.why||'chosen by AI').slice(0,140)}})}catch(e){}}
+async function runExport(ids,skipPost){if(exporting)return;const t0=Date.now();if(!NATIVE&&!pickMime())return toast('This browser has no video encoder (MediaRecorder).');exporting=true;cancel=false;$('#exc').hidden=false;$('#exa').disabled=true;
+ try{if(NATIVE&&aiOk())for(const i of ids){const c=S.clips[i];if(c&&!c.planned){$('#xs').textContent='AI editor is planning clip '+(i+1)+'…';try{await aiEditClip(i,m=>$('#xs').textContent=m)}catch(e){}}}
+  await aiAssignMusic(ids);for(const i of ids){if(cancel)break;await (NATIVE?exportClipNative(i,ids.length):exportClip(i,ids.length))}
+  if(!skipPost&&!cancel&&NATIVE){if(cfg.autoPost)await autoPostAll(t0);else toast(ytOn()?'Saved to Gallery. To upload, open Library and tap YouTube, or turn on automatic upload in Settings.':'Saved to Gallery.')}}catch(e){$('#xs').textContent=cancel||/cancelled/i.test(String(e&&e.message))?'Export cancelled.':'Export failed: '+(e.message||e)}finally{exporting=false;$('#exc').hidden=false;$('#exc').hidden=true;$('#exa').disabled=false;mon&&(mon.gain.value=1);if(S.view==='review')loop()}}
+async function exportClip(i,tot){const c=S.clips[i],W=cfg.res,H=Math.round(W*16/9/2)*2,cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+ await audio();stopPlay();setMusic(c);mon.gain.value=0;await document.fonts.load('800 40px "'+capFont(c)+'"').catch(()=>{});await seek(c.s);draw(x,W,H,c,c.s);const mime=pickMime();
+ const rec=new MediaRecorder(new MediaStream([...cv.captureStream(30).getVideoTracks(),...dest.stream.getAudioTracks()]),{mimeType:mime,videoBitsPerSecond:cfg.br*1e6,audioBitsPerSecond:128000}),ch=[];
+ rec.ondataavailable=e=>e.data.size&&ch.push(e.data);const done=new Promise(r=>rec.onstop=r);rec.start(500);mel.currentTime=0;await vid.play();if(mel.src)mel.play().catch(()=>{});
+ let th='';$('#xs').textContent='Encoding '+esc(c.title)+'… keep this tab visible.';
+ await new Promise(res=>{const tick=()=>{const t=vid.currentTime,p=Math.min(1,(t-c.s)/(c.e-c.s));draw(x,W,H,c,t);$('#xb').style.width=Math.round(p*100)+'%';if(!th&&p>.3)th=cv.toDataURL('image/jpeg',.6);
+  if(cancel||t>=c.e||vid.ended)res();else requestAnimationFrame(tick)};tick()});
+ rec.stop();stopPlay();await done;mon.gain.value=1;if(cancel){$('#xs').textContent='Export cancelled.';return}
+ const ext=mime.includes('mp4')?'mp4':'webm',blob=new Blob(ch,{type:mime.split(';')[0]});
+ if(!blob.size)throw new Error('The encoder produced an empty file.');
+ const rc={id:Date.now()+i,name:c.title,src:S.file.name,created:Date.now(),dur:c.e-c.s,ext,blob,thumb:th,mood:c.mood,score:c.score};
+ try{await tx('readwrite',s=>s.put(rc));$('#xs').textContent='Saved to library: '+c.title}catch(e){$('#xs').textContent='Exported, but the library could not store it ('+(e.message||'storage full')+'). Saving to your device now.'}
+ await saveFile(rc)}
+async function saveFile(r){let dl=null;try{dl=window.claude?await claude.use('downloads'):null}catch(e){}
+ if(!dl)return toast('Saving to the device isn’t available in this view. Open the clip from the Library.');
+ try{await dl.save({filename:r.name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'-')+'.'+r.ext,data:r.blob})}catch(e){if(e.code!=='declined')toast('Save failed: '+(e.message||e.code))}}
+async function loadLib(){if(NATIVE)return loadLibN();const el=$('#ll');let items=[];try{items=await tx('readonly',s=>s.getAll())||[]}catch(e){el.innerHTML='<div class="note">The library is unavailable in this browser: '+esc(e.message||'storage blocked')+'</div>';return}
+ if(!items.length){el.innerHTML='<div class="card">No exported clips yet. Export a clip and it will appear here.</div>';return}
+ const g={};items.sort((a,b)=>b.created-a.created).forEach(r=>(g[r.src]=g[r.src]||[]).push(r));
+ el.innerHTML=Object.entries(g).map(([s,a])=>`<div class="card"><h3>${esc(s)}</h3><p>${a.length} clip${a.length>1?'s':''}</p><div class="lib">${a.map(r=>`<div><img src="${r.thumb||''}" alt=""><b>${esc(r.name)}</b><p>${Math.round(r.dur)}s · ${r.ext} · ${(r.blob.size/1e6).toFixed(1)} MB</p><div class="row"><button data-p="${r.id}">Play</button><button data-s="${r.id}">Save</button><button data-y="${r.id}">${r.yt?'Uploaded':'YouTube'}</button><button data-d="${r.id}">Delete</button></div></div>`).join('')}</div></div>`).join('');
+ el.onclick=async e=>{const b=e.target.closest('button');if(!b)return;const id=+(b.dataset.p||b.dataset.s||b.dataset.y||b.dataset.d),r=items.find(q=>q.id===id);if(!r)return;
+  if(b.dataset.p){$('#dv').src=URL.createObjectURL(r.blob);dg.showModal()}else if(b.dataset.s)saveFile(r);else{await tx('readwrite',s=>s.delete(id));loadLib()}}}
+dg.onclose=()=>{$('#dv').pause()};
+/* settings */
+$$('[data-k]').forEach(el=>{const k=el.dataset.k,o=el.previousElementSibling&&el.previousElementSibling.querySelector?el.previousElementSibling.querySelector('output'):null;if(el.type==='checkbox')el.checked=cfg[k];else el.value=cfg[k];if(o)o.textContent=cfg[k];
+ el.oninput=()=>{cfg[k]=el.type==='checkbox'?el.checked:(el.type==='range'||el.dataset.n?+el.value:el.value);persist();const o2=el.previousElementSibling&&el.previousElementSibling.querySelector?el.previousElementSibling.querySelector('output'):null;if(o2)o2.textContent=el.value}});
+
+/* API keys: explicit Save button, read-back check, status line */
+function keyStatus(k){const el=$('#ks_'+k);if(!el)return;let stored='';try{if(window.AndroidBridge)stored=AndroidBridge.getSecret(k)||''}catch(e){}
+ const has=!!(cfg[k]&&cfg[k].trim());el.textContent=!has?'No key saved':(window.AndroidBridge?(stored?'Saved on this phone ✓ (ends …'+stored.trim().slice(-4)+')':'Not saved yet. Tap Save key'):'Key kept for this session only (open the real app to store it)');el.style.color=has&&stored?'#6fe08a':'';}
+function saveKey(k){const inp=document.querySelector('[data-k="'+k+'"]');cfg[k]=(inp.value||'').trim().replace(/^["']|["']$/g,'');inp.value=cfg[k];persist();keyStatus(k);
+ if(!cfg[k]){toast('Nothing to save. Paste the key first.');return}
+ let ok=true;try{if(window.AndroidBridge)ok=(AndroidBridge.getSecret(k)||'')===cfg[k]}catch(e){ok=false}
+ toast(ok?'Key saved ✓':'Could not save the key. Try again, or restart the app.')}
+$$('[data-save]').forEach(b=>b.onclick=()=>saveKey(b.dataset.save));
+$$('[data-clear]').forEach(b=>b.onclick=()=>{const k=b.dataset.clear,inp=document.querySelector('[data-k="'+k+'"]');inp.value='';cfg[k]='';persist();keyStatus(k);toast('Key removed')});
+['groq','gemini','openrouter','ytKey'].forEach(k=>{const inp=document.querySelector('[data-k="'+k+'"]');if(inp){inp.addEventListener('paste',()=>setTimeout(()=>saveKey(k),60));inp.addEventListener('change',()=>saveKey(k))}keyStatus(k)});
+
+/* OpenRouter model list (M26) */
+function orFill(list){const sel=document.querySelector('[data-k="orModel"]');if(!sel)return;const keep=cfg.orModel||'auto';sel.innerHTML='<option value="auto">Auto: the app tries the best free models</option>'+list.map(m=>'<option value="'+esc(m.id)+'">'+(m.vision?'👁 ':'')+esc(m.name||m.id)+'</option>').join('');
+ if(keep!=='auto'&&!list.some(m=>m.id===keep))sel.insertAdjacentHTML('beforeend','<option value="'+esc(keep)+'">'+esc(keep)+'</option>');sel.value=keep}
+(function(){const sel=document.querySelector('[data-k="orModel"]');if(sel&&cfg.orModel&&cfg.orModel!=='auto'){sel.insertAdjacentHTML('beforeend','<option value="'+esc(cfg.orModel)+'">'+esc(cfg.orModel)+'</option>');sel.value=cfg.orModel}})();
+$('#orload').onclick=async()=>{const st=$('#orst');if(!NATIVE){st.textContent='Needs the phone app.';return}if(!cfg.openrouter){st.textContent='Save your OpenRouter key first.';return}
+ st.textContent='Loading…';try{const r=await cfNative.call(s=>AndroidBridge.orModels(s),{});orFill(r.models||[]);st.textContent=(r.models||[]).length+' free models. 👁 = can see pictures.'}catch(e){st.textContent='Could not load: '+(e.message||e)}};
+
+/* Face cam (second video) */
+function camOk(){try{return !!(window.AndroidBridge&&AndroidBridge.hasCam())}catch(e){return false}}
+$('#rf').addEventListener('click',()=>{try{AndroidBridge.setPickTarget('cam')}catch(e){}});
+$('#rf').onchange=e=>{const f=e.target.files[0];setTimeout(()=>{const ok=camOk()&&!!f;$('#rfs').textContent=ok?f.name:'None chosen';if(ok&&!cfg.cut){cfg.cut=true;persist();const cb=document.querySelector('[data-k="cut"]');if(cb)cb.checked=true}if(ok)toast('Face cam added. Export a clip to see the cutaways.')},200)};
+$('#rfc').onclick=()=>{try{AndroidBridge.clearCam()}catch(e){}$('#rf').value='';$('#rfs').textContent='None chosen';toast('Face cam removed')};
+const TMOOD=()=>{try{return JSON.parse(localStorage.getItem('cfm')||'{}')}catch(e){return{}}};
+function loadLib(){if(!NATIVE)return;try{const mm=TMOOD(),names=JSON.parse(AndroidBridge.musicLib()||'[]');S.tracks=names.map(n=>({name:n,url:'https://appassets.androidplatform.net/music/'+encodeURIComponent(n),mood:mm[n]||'funk'}));renderTracks()}catch(e){}}
+$('#mf').onchange=e=>{if(NATIVE){e.target.value='';[900,2500,6000].forEach(ms=>setTimeout(loadLib,ms));toast('Songs added and saved in the app.');return}[...e.target.files].forEach(f=>S.tracks.push({name:f.name,url:URL.createObjectURL(f),mood:'funk'}));e.target.value='';renderTracks()};
+function renderTracks(){$('#tl').innerHTML=S.tracks.map((t,i)=>`<div class="row" style="margin-top:8px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span><select data-m="${i}" style="width:120px"><option>funk</option><option>emotional</option><option>phonk</option><option>calm</option><option>upbeat</option><option>intense</option></select><button data-r="${i}" aria-label="Remove">Remove</button></div>`).join('');
+ $$('[data-m]').forEach(s=>{s.value=S.tracks[s.dataset.m].mood;s.onchange=()=>{const t=S.tracks[s.dataset.m];t.mood=s.value;const mm=TMOOD();mm[t.name]=s.value;try{localStorage.setItem('cfm',JSON.stringify(mm))}catch(e){}}});$$('[data-r]').forEach(b=>b.onclick=()=>{const rt=S.tracks.splice(+b.dataset.r,1)[0];if(NATIVE&&rt)try{AndroidBridge.musicRemove(rt.name)}catch(e){};S.clips.forEach(c=>{if(typeof c.music==='number')c.music='auto'});renderTracks()})}
+
+/* ---- Music Finder: AI search queries -> YouTube Creative Commons results (preview only) ---- */
+const MUSIC_SYS='You pick the single best real song for a short-form video edit, like a pro editor. Reply with JSON only: an array of exactly 3 objects {song, artist, why}, best first. Prefer Brazilian funk, trending edit songs and emotional songs that editors use, and match the clip mood, topic and speech. Never pick lofi or generic mixes. why = one short sentence. Base it only on the clip data given.';
+const MUSIC_SCHEMA={type:'array',items:{type:'object',properties:{song:{type:'string'},artist:{type:'string'},why:{type:'string'}},required:['song','artist','why']}};
+const MOOD_Q={funk:[['MC Lan & Major RD','Rave de Favela','Brazilian funk, heavy and trending in edits'],['ATLXS','Passo Bem Solto','Smooth funk groove for fast cuts'],['Hensonn','Sahara','Funk-phonk energy for hype moments']],emotional:[['Duncan Laurence','Arcade','Emotional and widely used in edits'],['Ludovico Einaudi','Experience','Cinematic build, voice stays clear'],['Øneheart x reidenshi','snowfall','Soft and emotional, popular in edits']],intense:[['Kordhell','Murder In My Mind','Hard phonk drop for fast cuts'],['DVRST','Close Eyes','Dark edit favourite, punchy bass'],['INTERWORLD','Metamorphosis','Aggressive phonk, big impact']]};
+const styleKey=c=>{const m=styleMood(c);return m==='funk'?'funk':m==='emotional'?'emotional':'intense'};
+const dec=s=>{try{return new DOMParser().parseFromString(String(s||''),'text/html').documentElement.textContent}catch(e){return s}};
+const fmtD=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+async function findMusic(){const c=S.clips[S.sel];const st=$('#mfs'),box=$('#mres'),b=$('#mfind');
+ if(!c){toast('Analyze a video and pick a clip first.');return}
+ if(!cfg.ytKey){st.textContent='Paste your free YouTube API key above first.';return}
+ b.disabled=true;box.innerHTML='';
+ try{let qs=(MOOD_Q[styleKey(c)]||MOOD_Q.funk).map(a=>({query:a[0]+' '+a[1]+' official audio',why:a[2],name:a[1]+' – '+a[0]}));
+  if(!aiOk())st.textContent='No AI key saved, so popular songs for this clip mood are used. Add your Gemini key for AI picks.';
+  if(aiOk()&&NATIVE){st.textContent='AI is picking the best songs…';
+   try{const text=S.cues.filter(q=>q.b>c.s&&q.a<c.e).map(q=>q.t).join(' ').slice(0,1200);
+    const r=await cfNative.call(s=>AndroidBridge.gemini(s),{prov:cfg.aiProv||'gemini',orModel:cfg.orModel||'auto',system:MUSIC_SYS,user:JSON.stringify({mood:c.mood,title:c.title,category:c.category||'general',speech:text}),schema:MUSIC_SCHEMA});
+    const a=JSON.parse(String(r.text).replace(/^```(?:json)?|```$/g,'').trim());
+    if(Array.isArray(a)&&a.length)qs=a.filter(o=>o&&o.song).slice(0,3).map(o=>({query:(String(o.artist||'')+' '+o.song+' official audio').trim().slice(0,90),why:String(o.why||'').slice(0,140),name:(String(o.song)+(o.artist?' – '+o.artist:'')).slice(0,100)}))}catch(e){st.textContent='AI unavailable ('+(e.message||'error')+'). Using popular songs for the clip mood instead.'}}
+  const seen=new Set(),all=[];
+  for(const q of qs){st.textContent='Searching YouTube: '+q.name+'…';
+   const r=await cfNative.call(s=>AndroidBridge.musicSearch(s),{q:q.query,max:3,cc:false});
+   (r.items||[]).forEach(it=>{if(!seen.has(it.id)){seen.add(it.id);all.push(Object.assign({why:q.why,name:q.name,best:!all.length},it))}})}
+  if(!all.length){st.textContent='No songs found. Tap again to retry.';return}
+  c.song=all[0].name;
+  st.textContent='Best pick chosen for this clip.';
+  const card=(it,i)=>`<div class="card" style="display:flex;gap:10px;margin-top:8px;${it.best?'border:2px solid var(--ac)':''}">${it.thumb?`<img src="${esc(it.thumb)}" alt="" style="width:96px;height:54px;object-fit:cover;border-radius:8px;flex:none">`:''}<div style="flex:1;min-width:0">${it.best?'<b style="color:var(--ac)">★ BEST PICK</b><br>':''}<b>${esc(it.name)}</b><p style="margin:2px 0;color:var(--mu)">${esc(dec(it.title))} · ${esc(dec(it.channel))}${it.dur?' · '+fmtD(it.dur):''}</p><p style="margin:2px 0">${esc(it.why)}</p><div class="row"><a class="pri" style="padding:8px 12px;border-radius:10px;text-decoration:none" href="https://www.youtube.com/watch?v=${esc(it.id)}">▶ Preview</a><button data-cn="${i}">Copy song name</button></div></div></div>`;
+  box.innerHTML=all.slice(0,9).map(card).join('')+'<p>To use it: upload your clip as a YouTube Short, tap <b>Add sound</b>, and search the song name. YouTube licenses it, so it plays under your video without a copyright claim. The app does not download songs from YouTube.</p>';
+  box.querySelectorAll('[data-cn]').forEach(btn=>btn.onclick=()=>{const it=all[+btn.dataset.cn];try{navigator.clipboard.writeText(it.name).then(()=>toast('Song name copied'),()=>toast(it.name))}catch(e){toast(it.name)}})
+ }catch(e){st.textContent=e.message||'Search failed.'}finally{b.disabled=false}}
+{const mb=$('#mfind');if(mb)mb.onclick=findMusic}
+const FONTS=['Michroma','Poppins XB','Anton','Bungee','Bangers','Luckiest Guy','Archivo Black','Poppins','Bebas Neue','Russo One','Black Ops One'];FONTS.forEach(f=>document.fonts.load('800 40px "'+f+'"').catch(()=>{}));
+const capFont=c=>cfg.font==='auto'?'Poppins':cfg.font;
+const capStatus=m=>{const a=$('#as');if(a)a.textContent=m;if(S.busy)$('#alog').textContent=m};
+let capCancel=false,capBusy=false;
+async function autoCap(i){if(NATIVE)return nativeCaption(i);const c=S.clips[i],SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)throw new Error('This browser has no speech recognition. Use Chrome or Edge, or import an .srt file.');
+ await audio();stopPlay();mel.pause();mon.gain.value=1;await seek(c.s);
+ const aud=dest.stream.getAudioTracks()[0],r=new SR(),segs=[];let seg=null,run=true,err='';r.lang=cfg.lang==='auto'?'en-US':cfg.lang;r.continuous=true;r.interimResults=true;
+ r.onresult=e=>{for(let k=e.resultIndex;k<e.results.length;k++){const R=e.results[k],t=vid.currentTime;if(seg===null)seg=Math.max(c.s,t-.8);if(R.isFinal){const tx=R[0].transcript.trim();if(tx)segs.push({a:seg,b:Math.min(c.e,Math.max(seg+.5,t-.4)),t:tx});seg=null}}};
+ r.onerror=e=>{if(e.error!=='no-speech'&&e.error!=='aborted')err=e.error};
+ r.onend=()=>{if(run&&!err)try{r.start(aud)}catch(e){}};
+ try{r.start(aud)}catch(e){throw new Error('Could not start speech recognition ('+e.message+').')}
+ await vid.play();capStatus('Listening to clip '+(i+1)+' at normal speed. If your browser uses the microphone, keep the volume up and stay quiet.');
+ await new Promise(res=>{const w=()=>{if(capCancel||err||vid.currentTime>=c.e||vid.ended)res();else setTimeout(w,200)};w()});
+ stopPlay();await new Promise(z=>setTimeout(z,1500));run=false;try{r.stop()}catch(e){}await new Promise(z=>setTimeout(z,800));
+ if(err)throw new Error(err==='not-allowed'||err==='service-not-allowed'?'Speech recognition is blocked here. Allow microphone or speech access for this page, or open it in Chrome or Edge.':'Speech engine error: '+err);
+ const cues=[];segs.forEach(s=>{const w=s.t.split(/\s+/),n=Math.ceil(w.length/5),d=(s.b-s.a)/n;for(let k=0;k<n;k++)cues.push({a:s.a+k*d,b:s.a+(k+1)*d,t:w.slice(k*5,k*5+5).join(' ')})});
+ S.cues=S.cues.filter(q=>!(q.b>c.s&&q.a<c.e)).concat(cues).sort((p,q)=>p.a-q.a);return cues.length}
+async function runCap(ids){if(capBusy)return;capBusy=true;capCancel=false;let tot=0;
+ try{for(const i of ids){if(capCancel)break;tot+=await autoCap(i);S.clips[i].capOn=true;if(/^Moment at/.test(S.clips[i].title))autoTitle(S.clips[i])}capStatus(capCancel?'Stopped.':tot?tot+' caption lines added. Check them below, since speech engines make mistakes.':'No speech was recognised. Check the spoken language setting and that the clip has clear speech.')}
+ catch(e){capStatus(e.message||String(e))}finally{capBusy=false;if(S.view==='review'){syncCtl();seek(cur().s)}}}
+function renderCE(){const c=cur(),el=$('#ce');if(!c)return;const L=S.cues.filter(q=>q.b>c.s&&q.a<c.e);
+ el.innerHTML=L.length?'<label class="f">Caption lines (fix mistakes here)</label>'+L.map(q=>{const i=S.cues.indexOf(q);return `<div class="row" style="margin:4px 0"><span style="width:44px;color:var(--mu)">${fmt(q.a)}</span><input type="text" data-c="${i}" value="${esc(q.t)}" style="flex:1"><button data-cd="${i}" aria-label="Delete line">✕</button></div>`}).join('')+'<button id="srt" style="margin-top:6px">Save all captions (.srt text)</button>':'';
+ el.oninput=e=>{const i=e.target.dataset.c;if(i!==undefined){const q=S.cues[+i];q.t=e.target.value;q.w=evenW(q)}};
+ el.onclick=e=>{const b=e.target.closest('[data-cd]');if(b){S.cues.splice(+b.dataset.cd,1);renderCE()}else if(e.target.id==='srt')saveSrt()}}
+async function saveSrt(){const txt=subToSrt(S.cues);let dl=null;try{dl=window.claude?await claude.use('downloads'):null}catch(e){}
+ if(!dl)return toast('Saving isn’t available in this view.');try{await dl.save({filename:'captions.srt',data:txt})}catch(e){if(e.code!=='declined')toast('Save failed: '+(e.message||e.code))}}
+$('#ac').onclick=()=>runCap([S.sel]);$('#acall').onclick=()=>runCap(S.clips.map((_,i)=>i));$('#ps').onclick=()=>{capCancel=true;stopPlay()};$('#bt').onchange=e=>cur().beat=e.target.checked;
+/* ===== native (Android) features: offline captions, hardware export, gallery library, autonomous mode ===== */
+function autoTitle(c){const tx=S.cues.filter(q=>q.b>c.s&&q.a<c.e).map(q=>q.t).join(' ').trim();if(!tx)return;const ws=tx.split(/\s+/),t=ws.slice(0,7).join(' ')+(ws.length>7?'…':'');c.title=t.charAt(0).toUpperCase()+t.slice(1)}
+function musicChoice(c){if(c.music==='none')return{type:'none'};
+ if(typeof c.music==='number'&&S.tracks[c.music])return{type:'file',name:S.tracks[c.music].name};
+ if(!cfg.autoMusic)return{type:'none'};const t=autoTrack(c);if(t)return{type:'file',name:t.name};return cfg.musicStyle==='off'?{type:'none'}:{type:'synth',mood:styleMood(c)}}
+if(NATIVE)setTimeout(loadLib,300);
+const wantTag=c=>['funk','emotional','phonk'].includes(c.aiStyle)?c.aiStyle:(cfg.musicStyle==='phonk')?'phonk':(c.mood==='calm'?'emotional':'funk');
+function autoTrack(c){if(!S.tracks.length)return null;const w=wantTag(c);let pool=S.tracks.filter(t=>t.mood===w||t.mood===c.mood);if(!pool.length)pool=S.tracks;const i=Math.max(0,S.clips.indexOf(c));return pool[i%pool.length]}
+function styleMood(c){const s=cfg.musicStyle||'auto';if(['funk','emotional'].includes(c.aiStyle))return c.aiStyle;if(c.aiStyle==='phonk')return'intense';if(s==='funk')return'funk';if(s==='emotional')return'emotional';if(s==='phonk')return'intense';return c.mood==='calm'?'emotional':'funk'}
+async function nativeCaption(i){const c=S.clips[i];capStatus('Clip '+(i+1)+': listening…');
+ const r=await cfNative.call(s=>AndroidBridge.transcribe(s),{start:c.s,end:c.e,lang:cfg.lang,key:cfg.groq||''},p=>capStatus('Clip '+(i+1)+': writing captions… '+p+'%'));
+ S.capRtl=!!r.rtl;if(r.lang)toast('Spoken language: '+r.lang+(r.engine==='ai'?' (AI)':' (offline)'));if(r.note)toast(r.note);
+ S.cues=S.cues.filter(q=>!(q.b>c.s&&q.a<c.e)).concat(r.cues).sort((p,q)=>p.a-q.a);return r.cues.length}
+function exportSettings(c){const [a,b]=String(cfg.asp||'9:16').split(':').map(Number),s=+cfg.res||720;let w,h;if(a<=b){w=s;h=Math.round(s*b/a)}else{h=s;w=Math.round(s*a/b)}
+ const name=String(cfg.fname||'{title}').split('{title}').join(c.title||'clip'),raw={width:w,height:h,fps:+cfg.fps||30,bitrate:(+cfg.br||6)*1e6,filename:name};
+ return window.RoohuValidate?RoohuValidate.validateExportConfig(raw):{ok:true,errors:[],value:{width:w,height:h,fps:raw.fps,bitrate:raw.bitrate,filename:name}}}
+async function exportClipNative(i,tot){const c=S.clips[i];$('#xb').style.width='0%';$('#xs').textContent='Rendering clip '+(i+1)+' of '+tot+' on the phone’s video chip…';
+ const ec=exportSettings(c);if(!ec.ok)toast(ec.errors[0]);
+ const spec={w:ec.value.width,h:ec.value.height,fps:ec.value.fps,bps:ec.value.bitrate,fname:ec.value.filename,look:LK(),cut:!!(cfg.cut&&camOk()),camA:+cfg.camA||2,camB:+cfg.camB||3,rtl:!!S.capRtl,hook:c.hook||c.title,title:c.title,s:c.s,e:c.e,mode:c.mode,x:c.x,enh:c.enh,trans:c.trans,beat:!!c.beat,mood:c.mood,res:cfg.res,br:cfg.br,
+  capOn:!!(cfg.capOn&&c.capOn&&S.cues.length),capStyle:capStyle(c),font:capFont(c),prog:cfg.prog,wmPos:cfg.wmPos,wmOp:cfg.wmOp,wmSize:cfg.wmSize,vol:cfg.vol,duck:!!cfg.duck,music:musicChoice(c),
+  cues:S.cues.filter(q=>q.b>c.s&&q.a<c.e).map(q=>({a:q.a,b:q.b,w:capWords(q).map(w=>[w.w,w.a,w.b])})),sfx:c.sfx||[]};
+ if(c.punches&&c.punches.length)spec.punches=c.punches;
+ if(cfg.follow!==false&&c.track&&c.track.length>1)spec.track=c.track;else spec.follow=false;
+ if(cfg.ramps!==false&&!spec.cut&&c.ramps&&c.ramps.length)spec.ramps=c.ramps;
+ const r=await cfNative.call(s=>AndroidBridge.exportClip(s),spec,p=>{$('#xb').style.width=p+'%'});
+ const lib=libN();lib.push({id:Date.now()+i,name:c.title,src:S.file.name,created:Date.now(),dur:c.e-c.s,uri:r.uri,mood:c.mood,score:c.score,post:c.post||'',tags:c.tags||[]});try{localStorage.setItem('cflib',JSON.stringify(lib))}catch(e){}
+ $('#xb').style.width='100%';$('#xs').textContent='Saved to your Gallery (Movies/RoohuClipForge): '+c.title;toast('Saved to Gallery: '+c.title)}
+function libN(){try{return JSON.parse(localStorage.getItem('cflib')||'[]')}catch(e){return[]}}
+function loadLibN(){const el=$('#ll'),items=libN().sort((a,b)=>b.created-a.created);
+ if(!items.length){el.innerHTML='<div class="card">No clips yet. Export a clip (or tap Auto Create) and it will appear here and in your Gallery.</div>';return}
+ const g={};items.forEach(r=>(g[r.src]=g[r.src]||[]).push(r));
+ el.innerHTML=Object.entries(g).map(([s,a])=>`<div class="card"><h3>${esc(s)}</h3><p>${a.length} clip${a.length>1?'s':''} · saved in your Gallery (Movies/RoohuClipForge)</p><div class="lib">${a.map(r=>`<div><img data-th="${r.id}" alt=""><b>${esc(r.name)}</b><p>${Math.round(r.dur)}s · MP4 · ${esc(r.mood||'')}</p><div class="row"><button data-p="${r.id}">Play</button><button data-s="${r.id}">Share</button><button data-d="${r.id}">Delete</button></div></div>`).join('')}</div></div>`).join('');
+ el.querySelectorAll('img[data-th]').forEach((im,i)=>setTimeout(()=>{const r=items.find(q=>String(q.id)===im.dataset.th);try{const b=AndroidBridge.thumb(r.uri);if(b)im.src='data:image/jpeg;base64,'+b}catch(e){}},60*i));
+ el.onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=+(b.dataset.p||b.dataset.s||b.dataset.d),r=items.find(q=>q.id===id);if(!r)return;
+  if(b.dataset.y){ytLibUpload(r,b);return}if(b.dataset.p)AndroidBridge.openVideo(r.uri);else if(b.dataset.s)AndroidBridge.shareVideo(r.uri);
+  else{AndroidBridge.deleteVideo(r.uri);try{localStorage.setItem('cflib',JSON.stringify(libN().filter(q=>q.id!==id)))}catch(er){}loadLibN()}}}
+/* one tap: analyse, pick moments, caption, title, style, add music, render, save to Gallery */
+/* ===== YouTube (official OAuth + resumable upload, see YouTubeClient.java) ===== */
+function ytOn(){try{return !!(window.AndroidBridge&&AndroidBridge.ytStatus&&AndroidBridge.ytStatus()==='1')}catch(e){return false}}
+function ytStat(){const el=$('#yts');if(el)el.textContent=ytOn()?'Connected':'Not connected'}
+function libSet(id,patch){const l=libN();const r=l.find(q=>q.id===id);if(r)Object.assign(r,patch);try{localStorage.setItem('cflib',JSON.stringify(l))}catch(e){}}
+async function ytUpload(r,onp){const tags=(r.tags||[]).slice(),desc=[r.post||r.name||'',tags.join(' '),'#Shorts'].filter(Boolean).join('\n\n');
+ const x=await cfNative.call(s=>AndroidBridge.ytUpload(s),{uri:r.uri,title:String(r.name||'Short').slice(0,90),desc,tags:tags.map(t=>t.replace(/^#/,'')),privacy:cfg.ytPrivacy||'private'},onp);
+ libSet(r.id,{yt:x.videoId});return x.videoId}
+async function ytLibUpload(r,b){if(!ytOn())return toast('Connect YouTube in Settings first.');if(r.yt)return toast('Already uploaded: youtu.be/'+r.yt);
+ b.disabled=true;try{const v=await ytUpload(r,p=>{b.textContent='Uploading '+p+'%'});b.textContent='Uploaded';toast('Uploaded to YouTube ('+(cfg.ytPrivacy||'private')+'): youtu.be/'+v)}catch(e){b.disabled=false;b.textContent='YouTube';toast('YouTube upload failed: '+(e.message||e))}}
+async function autoPostAll(t0){if(!ytOn()){toast('YouTube is not connected, so nothing was uploaded.');return}
+ const fresh=libN().filter(r=>r.created>=t0).sort((a,b)=>a.created-b.created);let ok=0;
+ for(let i=0;i<fresh.length;i++){$('#xs').textContent='Uploading to YouTube '+(i+1)+' of '+fresh.length+'…';
+  try{await ytUpload(fresh[i],p=>{$('#xb').style.width=p+'%'});ok++}catch(e){toast('Upload '+(i+1)+' failed: '+(e.message||e));if(/quota|connect/i.test(e.message||''))break}}
+ toast(ok+' of '+fresh.length+' uploaded to YouTube')}
+{const c=$('#ytc'),d=$('#ytd');if(c)c.onclick=async()=>{persist();toast('Opening Google sign-in…');try{await cfNative.call(s=>AndroidBridge.ytConnect(s),{});ytStat();toast('YouTube connected.')}catch(e){ytStat();toast(e.message||'Could not connect')}};
+ if(d)d.onclick=()=>{try{AndroidBridge.ytDisconnect()}catch(e){}ytStat();toast('YouTube disconnected.')};ytStat()}
+/* Auto edit decisions: effects follow mood and category, music rotates through the tracks that match the mood, and a post caption is always filled in. */
+function autoLook(c,ci){const cat=c.category||'general',calmCat=['podcast','interview','documentary','tutorial'].includes(cat);
+ c.enh=true;c.mode='fill';c.trans=c.mood==='calm'||(calmCat&&c.mood!=='intense')?'fade':'punch';c.beat=c.mood!=='calm'&&!calmCat;
+ const m=S.tracks.map((t,i)=>({t,i})).filter(o=>o.t.mood===c.mood),pool=m.length?m:S.tracks.map((t,i)=>({t,i}));
+ c.music=pool.length?pool[ci%pool.length].i:'auto';
+ if(!c.post){const base=String(c.title||'').replace(/^Moment at.*/,'').trim();c.post=base;c.tags=['#shorts','#fyp','#'+(cat==='general'?'viral':cat)]}}
+async function autoCreate(){if(S.busy||exporting||!S.file)return;const keep=cfg.autoCap,t0=Date.now();cfg.autoCap=true;
+ try{await $('#go').onclick();if(!S.clips.length){toast('No clips could be found in this video.');return}
+  if(aiOk()&&S.cues.length)await aiDirect(true);
+   S.clips.forEach((c,ci)=>{if(/^Moment at/.test(c.title))autoTitle(c);autoLook(c,ci);c.capOn=S.cues.some(q=>q.b>c.s&&q.a<c.e)});
+  go('export');await runExport(S.clips.map((_,i)=>i),true);
+  if(!cancel){if(cfg.autoPost)await autoPostAll(t0);toast('All done. Your clips are in the Gallery.');go('lib')}}
+ catch(e){toast('Auto Create stopped: '+(e.message||e))}finally{cfg.autoCap=keep}}
+$('#auto').onclick=autoCreate;
+
+if(NATIVE)document.body.classList.add('nat');
+caps();paintNav('import');
+</script></body></html>
