@@ -1,0 +1,98 @@
+name: Build Roohu ClipForge APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Validate project files
+        run: |
+          missing=0
+          for f in settings.gradle build.gradle gradle.properties app/build.gradle \
+                   app/src/main/AndroidManifest.xml \
+                   app/src/main/assets/Roohu-ClipForge.html \
+                   app/src/main/java/com/roohu/clipforge/MainActivity.java \
+                   app/src/main/res/layout/activity_main.xml; do
+            if [ ! -f "$f" ]; then echo "::error::Missing required file: $f (upload the whole project, including the hidden .github folder)"; missing=1; fi
+          done
+          exit $missing
+
+      - name: Download offline speech models (English + Hindi/Urdu speech)
+        run: |
+          mkdir -p app/src/main/assets
+          cd app/src/main/assets
+          curl -fL --retry 3 -o en.zip https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
+          unzip -q en.zip && mv vosk-model-small-en-us-0.15 model-en && rm en.zip
+          curl -fL --retry 3 -o hi.zip https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip
+          unzip -q hi.zip && mv vosk-model-small-hi-0.22 model-hi && rm hi.zip
+          ls model-en model-hi
+
+      - name: Download display fonts (real 3D-caption fonts)
+        run: |
+          mkdir -p app/src/main/assets/fonts
+          cd app/src/main/assets/fonts
+          B=https://raw.githubusercontent.com/google/fonts/main/ofl
+          get() { curl -fL --retry 3 -o "$2" "$B/$1/$2" || echo "::warning::could not fetch $2 (app falls back to a system font)"; }
+          get anton Anton-Regular.ttf
+          get bebasneue BebasNeue-Regular.ttf
+          get bangers Bangers-Regular.ttf
+          get archivoblack ArchivoBlack-Regular.ttf
+          get poppins Poppins-Black.ttf
+          get poppins Poppins-ExtraBold.ttf
+          get michroma Michroma-Regular.ttf
+          get bungee Bungee-Regular.ttf
+          get luckiestguy LuckiestGuy-Regular.ttf
+          get russoone RussoOne-Regular.ttf
+          get blackopsone BlackOpsOne-Regular.ttf
+          get tajawal Tajawal-Black.ttf
+          ls -la
+          for f in Poppins-ExtraBold.ttf Poppins-Black.ttf; do
+            [ -s "$f" ] || { echo "::error::Font $f did not download, so captions and the name credit would fall back to a cheap system font. Re-run the build."; exit 1; }
+          done
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install SDK packages
+        run: sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Run validation tests
+        run: |
+          node shared/test/validate.test.js
+          node shared/test/projects.test.js
+          node shared/test/subtitles.test.js
+          node shared/test/motion.test.js
+          node shared/test/clips.test.js
+
+      - name: Build debug APK
+        run: gradle --no-daemon --stacktrace assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Roohu-ClipForge-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Explain failure
+        if: failure()
+        run: echo "::error::The build failed. Open the failed step above and read the first line starting with 'error:' or 'What went wrong:'. Send that text to get it fixed."
