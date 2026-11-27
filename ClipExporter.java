@@ -290,7 +290,7 @@ final class ClipExporter {
                                     .setStartPositionMs((long) ((s + ramp.from[i]) * 1000)).setEndPositionMs((long) ((s + ramp.to[i]) * 1000)).build())
                             .build();
                     List<Effect> ve = new ArrayList<>(reframe(vw, vh, W, H, fill, cropX, track, ramp.from[i]));
-                    List<AudioProcessor> aeList = new ArrayList<>(); aeList.add(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, ramp.to[i] - ramp.from[i], false)); if (spec.optBoolean("voiceEnhance", false)) aeList.add(new VoiceClarityProcessor());
+                    List<AudioProcessor> aeList = new ArrayList<>(); aeList.add(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, ramp.to[i] - ramp.from[i], false)); if (spec.optBoolean("voiceEnhance", false)) aeList.add(new VoiceClarityProcessor()); if (spec.optBoolean("noiseControl", false)) aeList.add(new GentleNoiseGateProcessor());
                     if (Math.abs(ramp.speed[i] - 1) > 0.01) {
                         ve.add(new SpeedChangeEffect((float) ramp.speed[i]));
                         SonicAudioProcessor so = new SonicAudioProcessor();
@@ -825,11 +825,44 @@ final class ClipExporter {
         }
     }
 
+    /** Gentle downward expander for low-level noise between words; not source separation. */
+    static final class GentleNoiseGateProcessor extends BaseAudioProcessor {
+        private int channels = 2;
+        private float[] envelope = new float[2];
+        @Override protected AudioFormat onConfigure(AudioFormat in) throws UnhandledAudioFormatException {
+            if (in.encoding != C.ENCODING_PCM_16BIT) throw new UnhandledAudioFormatException(in);
+            channels = Math.max(1, in.channelCount);
+            envelope = new float[channels];
+            return in;
+        }
+        @Override public void queueInput(ByteBuffer input) {
+            int n = input.remaining();
+            ByteBuffer output = replaceOutputBuffer(n);
+            output.order(ByteOrder.nativeOrder());
+            ByteOrder previousOrder = input.order();
+            input.order(ByteOrder.nativeOrder());
+            int ch = 0;
+            while (input.remaining() >= 2) {
+                float x = input.getShort() / 32768f;
+                float level = Math.abs(x);
+                float coeff = level > envelope[ch] ? 0.35f : 0.015f;
+                envelope[ch] += coeff * (level - envelope[ch]);
+                float threshold = 0.012f;
+                float gain = envelope[ch] < threshold ? 0.28f : 1f;
+                output.putShort((short) Math.round(Math.max(-1f, Math.min(1f, x * gain)) * 32767f));
+                ch = (ch + 1) % channels;
+            }
+            input.order(previousOrder);
+            output.flip();
+        }
+    }
+
     private static List<AudioProcessor> sourceAudioProcessors(JSONObject spec, double duration) {
         List<AudioProcessor> processors = new ArrayList<>();
         processors.add(new GainProcessor((float) Math.max(0, Math.min(1.5,
                 spec.optDouble("srcVol", 100) / 100.0)), null, duration, false));
         if (spec.optBoolean("voiceEnhance", false)) processors.add(new VoiceClarityProcessor());
+        if (spec.optBoolean("noiseControl", false)) processors.add(new GentleNoiseGateProcessor());
         return processors;
     }
 
