@@ -1,0 +1,16 @@
+Roohu ClipForge M27 - Asset Loader Fix
+
+Fix:
+- Keeps SAF read permission when the picker offers a persistable grant.
+- Copies selected content:// video and optional camera media to a private app cache file before native Media3 export.
+- Reuses the cached copy for subsequent clips.
+- Shows a clearer error if Android cannot read/copy the selected source.
+
+Why:
+The export pipeline was passing the picker content URI directly into Media3 Transformer. Some Android document providers give temporary or provider-backed URIs that Media3's asset loader cannot read reliably.
+
+Build:
+Upload this patched project in place of the old M27 source, then run the Android debug APK workflow.
+
+Validation:
+Java source patch and project archive structure were checked. Android Gradle build/device export still need to be run on GitHub Actions/device.
