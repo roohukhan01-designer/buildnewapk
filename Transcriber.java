@@ -120,10 +120,10 @@ final class Transcriber {
         if (words == null) {
             String mk;
             if (auto) mk = probe(ctx, pcm.data);
-            else mk = iso.equals("en") ? "en" : (iso.equals("hi") || iso.equals("ur")) ? "hi" : null;
+            else mk = iso.equals("en") ? "en" : iso.equals("hi") ? "hi" : null;
             if (mk == null) {
-                throw new IOException((cloudErr != null ? cloudErr + " " : "")
-                        + "Offline captions cover English and Hindi/Urdu speech. Add the free Groq key in Settings to caption any language.");
+                String reason = "Offline captions support English and Hindi only. Urdu and other languages need the Groq Whisper key or an imported .srt file.";
+                throw new IOException((cloudErr != null ? cloudErr + " " : "") + reason);
             }
             words = vosk(ctx, pcm, mk, prog);
             detected = mk.equals("en") ? "english" : "hindi/urdu";
