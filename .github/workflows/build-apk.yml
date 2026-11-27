@@ -97,8 +97,23 @@ jobs:
         with:
           gradle-version: '8.7'
 
+      - name: Align Kotlin runtime versions
+        run: |
+          cat > kotlin-runtime-fix.gradle <<'EOF'
+          allprojects {
+            configurations.all {
+              resolutionStrategy.eachDependency { details ->
+                if (details.requested.group == 'org.jetbrains.kotlin' &&
+                    (details.requested.name == 'kotlin-stdlib-jdk7' || details.requested.name == 'kotlin-stdlib-jdk8')) {
+                  details.useVersion('1.8.22')
+                }
+              }
+            }
+          }
+          EOF
+
       - name: Build debug APK
-        run: gradle --no-daemon --stacktrace assembleDebug
+        run: gradle --no-daemon --stacktrace -I kotlin-runtime-fix.gradle assembleDebug
 
       - name: Verify APK
         run: |
