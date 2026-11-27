@@ -152,7 +152,23 @@ final class ClipExporter {
             // 1) smart reframe: follows the face when a track exists (M24), else the single crop position chosen during analysis
             List<Effect> pre = reframe(vw, vh, W, H, fill, cropX, track, 0);   // per-shot reframe
 
-            // 2) colour enhance
+            // 2) Cinematic Color Studio: restrained, adjustable grade presets.
+            final float gradeMix = Math.max(0f, Math.min(1f, (float) spec.optDouble("gradeStrength", 100) / 100f));
+            final String grade = spec.optString("grade", "cinematic");
+            float gradeContrast = 0f, gradeBrightness = 0f, gradeSaturation = 0f;
+            if ("teal".equals(grade)) { gradeContrast = 0.20f; gradeBrightness = 0.005f; gradeSaturation = 28f; }
+            else if ("warm".equals(grade)) { gradeContrast = 0.12f; gradeBrightness = 0.025f; gradeSaturation = 20f; }
+            else if ("cool".equals(grade)) { gradeContrast = 0.17f; gradeBrightness = -0.005f; gradeSaturation = 16f; }
+            else if ("vintage".equals(grade)) { gradeContrast = -0.05f; gradeBrightness = 0.025f; gradeSaturation = -22f; }
+            else if ("mono".equals(grade)) { gradeContrast = 0.16f; gradeSaturation = -100f; }
+            else if ("clean".equals(grade)) { gradeContrast = 0.04f; gradeBrightness = 0.005f; gradeSaturation = 4f; }
+            else { gradeContrast = 0.15f; gradeBrightness = 0.01f; gradeSaturation = 16f; }
+            if (gradeMix > 0f) {
+                if (gradeContrast != 0f) fx.add(new Contrast(gradeContrast * gradeMix));
+                if (gradeBrightness != 0f) fx.add(new Brightness(gradeBrightness * gradeMix));
+                if (gradeSaturation != 0f) fx.add(new HslAdjustment.Builder().adjustSaturation(gradeSaturation * gradeMix).build());
+            }
+            // Keep the existing automatic enhancement as an independent optional effect.
             if (spec.optBoolean("enh", true)) {
                 fx.add(new Contrast(neon ? 0.22f : 0.12f));
                 fx.add(new Brightness(0.02f));
