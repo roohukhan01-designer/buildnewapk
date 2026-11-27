@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+}
+android {
+    namespace 'com.roohu.clipforge'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.roohu.clipforge'
+        minSdk 26
+        targetSdk 34
+        versionCode 12
+        versionName '4.3.2'
+        ndk { abiFilters 'arm64-v8a', 'armeabi-v7a' }
+    }
+    signingConfigs {
+        release {
+            // Only used when the build provides a keystore through environment variables (CI secrets). Nothing is hardcoded.
+            if (System.getenv('RELEASE_KEYSTORE')) {
+                storeFile file(System.getenv('RELEASE_KEYSTORE'))
+                storePassword System.getenv('RELEASE_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('RELEASE_KEY_ALIAS')
+                keyPassword System.getenv('RELEASE_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('RELEASE_KEYSTORE')) signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+    packaging {
+        resources { excludes += ['/META-INF/{AL2.0,LGPL2.1}', '/META-INF/DEPENDENCIES'] }
+    }
+}
+dependencies {
+    implementation 'androidx.activity:activity:1.9.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+    // Hardware video rendering (trim, crop, effects, overlays, audio mixing)
+    implementation 'androidx.media3:media3-common:1.4.1'
+    implementation 'androidx.media3:media3-effect:1.4.1'
+    implementation 'androidx.media3:media3-transformer:1.4.1'
+    // Offline speech-to-text with word timestamps
+    implementation 'net.java.dev.jna:jna:5.13.0@aar'
+    implementation 'com.alphacephei:vosk-android:0.3.47'
+}
