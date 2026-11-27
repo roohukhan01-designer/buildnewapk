@@ -228,6 +228,15 @@ p{line-height:1.6}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}button,select,input{transition:none}}
 
+
+/* Advanced Caption Studio: precise word-level timing editor */
+.word-timing{margin-top:12px;padding:10px 12px;border:1px solid var(--ln);border-radius:14px;background:rgba(255,255,255,.025)}
+.word-timing>summary{cursor:pointer;font-weight:800;color:var(--ac);min-height:38px;display:flex;align-items:center}
+.word-timing .hint{margin:2px 0 10px}
+.word-row{display:grid;grid-template-columns:minmax(0,1fr) 86px 86px;gap:7px;margin:7px 0;align-items:center}
+.word-row input{min-width:0;width:100%;min-height:42px;padding:8px;background:#0c1214;border:1px solid var(--ln);border-radius:10px;color:var(--tx)}
+.word-row input:focus{outline:2px solid var(--ac);outline-offset:1px}
+@media(max-width:420px){.word-row{grid-template-columns:minmax(0,1fr) 76px 76px;gap:5px}.word-row input{font-size:13px;padding:7px}}
 </style>
 <script src="validate.js"></script>
 <script src="motion.js"></script>
@@ -412,9 +421,18 @@ function subToSrt(cues){return cues.map((q,i)=>`${i+1}\n${stamp(q.a)} --> ${stam
 /*end subtitles pure*/
 function subVisible(){const c=S.clips[S.sel],only=$('#sub-only')&&$('#sub-only').checked&&c;return S.cues.map((q,i)=>({q,i})).filter(o=>!only||(o.q.b>c.s&&o.q.a<c.e))}
 function renderSub(){const el=$('#sub-list');if(!el)return;const v=subVisible();
- el.innerHTML=v.length?v.slice(0,300).map(({q,i})=>`<div class="card" data-i="${i}"><div class="row"><input type="number" step="0.1" min="0" value="${q.a.toFixed(2)}" data-f="a" style="width:90px"><input type="number" step="0.1" min="0" value="${q.b.toFixed(2)}" data-f="b" style="width:90px"><button data-a="play">▶</button></div><input type="text" value="${esc(q.t)}" data-f="t" maxlength="200" style="width:100%;margin-top:8px"><div class="row" style="margin-top:8px"><button data-a="split">Split</button><button data-a="merge">Merge with next</button><button data-a="del">Delete</button></div></div>`).join('')+(v.length>300?'<div class="note">Showing the first 300 lines. Turn on “Only the selected clip” to see the rest.</div>':''):'<div class="note">No caption lines here yet. Run Auto-caption, import an .srt, or add a line at the playhead.</div>'}
+ el.innerHTML=v.length?v.slice(0,300).map(({q,i})=>{const ws=q.w&&q.w.length?q.w:subWords(q.t,q.a,q.b);return `<div class="card" data-i="${i}"><div class="row"><label class="f">Start <input type="number" step="0.01" min="0" value="${q.a.toFixed(2)}" data-f="a" style="width:100px"></label><label class="f">End <input type="number" step="0.01" min="0" value="${q.b.toFixed(2)}" data-f="b" style="width:100px"></label><button data-a="play">▶ Preview</button></div><input type="text" value="${esc(q.t)}" data-f="t" maxlength="200" style="width:100%;margin-top:8px"><details class="word-timing"><summary>Word timing · ${ws.length} words</summary><p class="hint">Adjust each word's start and end. These timings are used in the exported video.</p>${ws.map((w,j)=>`<div class="word-row"><input aria-label="Word ${j+1}" type="text" data-wf="t" data-wi="${j}" value="${esc(w[0])}"><input aria-label="Word ${j+1} start" type="number" step="0.01" data-wf="a" data-wi="${j}" value="${(+w[1]).toFixed(2)}"><input aria-label="Word ${j+1} end" type="number" step="0.01" data-wf="b" data-wi="${j}" value="${(+w[2]).toFixed(2)}"></div>`).join('')}</details><div class="row" style="margin-top:8px"><button data-a="split">Split line</button><button data-a="merge">Merge next</button><button data-a="del">Delete</button></div></div>`}).join('')+(v.length>300?'<div class="note">Showing the first 300 lines. Turn on “Only the selected clip” to see the rest.</div>':''):'<div class="note">No caption lines here yet. Run Auto-caption, import an .srt, or add a line at the playhead.</div>'}
 function subApply(n){S.cues=n;renderSub()}
-$('#sub-list').onchange=e=>{const f=e.target.dataset.f,row=e.target.closest('[data-i]');if(!f||!row)return;subApply(subUpdate(S.cues,+row.dataset.i,{[f]:e.target.value},S.dur))};
+$('#sub-list').onchange=e=>{const row=e.target.closest('[data-i]');if(!row)return;const i=+row.dataset.i,f=e.target.dataset.f,wf=e.target.dataset.wf;
+ if(f){subApply(subUpdate(S.cues,i,{[f]:e.target.value},S.dur));return}
+ if(!wf)return;
+ const q=S.cues[i],j=+e.target.dataset.wi;if(!q)return;
+ const words=(q.w&&q.w.length?q.w:subWords(q.t,q.a,q.b)).map(w=>w.slice());
+ if(!words[j])return;
+ if(wf==='t'){words[j][0]=String(e.target.value||'').trim();if(!words[j][0])return}
+ else{let n=+e.target.value;if(!isFinite(n))return;n=Math.max(q.a,Math.min(q.b,n));if(wf==='a')words[j][1]=Math.min(n,words[j][2]-.03);else words[j][2]=Math.max(n,words[j][1]+.03);words[j][1]=Math.max(q.a,words[j][1]);words[j][2]=Math.min(q.b,words[j][2]);}
+ const next=S.cues.slice();next[i]={...q,w:words,t:words.map(w=>w[0]).join(' ')};S.cues=next;renderSub();
+};
 $('#sub-list').onclick=e=>{const b=e.target.closest('button'),row=e.target.closest('[data-i]');if(!b||!row)return;const i=+row.dataset.i,q=S.cues[i];if(!q)return;
  if(b.dataset.a==='split')subApply(subSplit(S.cues,i,vid.currentTime>q.a&&vid.currentTime<q.b?vid.currentTime:undefined));
  else if(b.dataset.a==='merge')subApply(subMerge(S.cues,i));
