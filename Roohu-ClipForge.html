@@ -318,7 +318,7 @@ document.addEventListener('visibilitychange',()=>{try{if(document.hidden&&!expor
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const NATIVE=!!window.cfNative;
 const fmt=t=>Math.floor(Math.max(0,t)/60)+':'+String(Math.floor(Math.max(0,t)%60)).padStart(2,'0');
-let cfg={cut:false,camA:2,camB:3,look:'neon',react:true,groq:'',gemini:'',ytId:'',ytSecret:'',ytPrivacy:'private',autoPost:false,musicStyle:'off',asp:'9:16',fps:30,fname:'{title}',len:30,n:5,cap:'auto',capOn:true,wmPos:'mc',wmOp:90,wmSize:100,vol:35,res:720,br:6,autoMusic:true,font:'auto',lang:'auto',duck:true,prog:true,autoCap:NATIVE,follow:true,ramps:true,openrouter:'',aiProv:'gemini',orModel:'auto'};
+let cfg={cut:false,camA:2,camB:3,look:'neon',react:true,groq:'',gemini:'',ytId:'',ytSecret:'',ytPrivacy:'private',autoPost:false,musicStyle:'off',asp:'9:16',fps:30,fname:'{title}',len:30,n:5,cap:'gold',capOn:true,wmPos:'mc',wmOp:90,wmSize:100,vol:35,res:720,br:6,autoMusic:true,font:'Poppins',lang:'auto',duck:true,prog:true,autoCap:NATIVE,follow:true,ramps:true,openrouter:'',aiProv:'gemini',orModel:'auto'};
 try{Object.assign(cfg,JSON.parse(localStorage.getItem('cf')||'{}'))}catch(e){}
 if(cfg.v!==15){if(!cfg.v){cfg.wmPos='mc';if(!cfg.look)cfg.look='neon'}if(!cfg.v||cfg.v<13)cfg.cap='sport';if(!cfg.v||cfg.v<14)cfg.autoPost=true;cfg.v=15;cfg.musicStyle='off'}
 const LK=()=>cfg.look||'neon';
@@ -327,6 +327,7 @@ const aiOk=()=>cfg.aiProv==='openrouter'?!!cfg.openrouter:cfg.aiProv==='both'?!!
 if(!cfg.look)cfg.look=cfg.react===false?'normal':'react';
 if(!cfg.v4){cfg.v4=1;cfg.cap='auto';cfg.font='auto';try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}}
 if(!cfg.v3){cfg.v3=1;cfg.lang='auto';cfg.react=true;cfg.font='auto';cfg.cap='auto';try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}}
+if(!cfg.v16){if(cfg.cap==='auto')cfg.cap='gold';if(cfg.font==='auto')cfg.font='Poppins';cfg.v16=1;try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}}
 const persist=()=>{try{const c=Object.assign({},cfg);delete c.groq;delete c.gemini;delete c.openrouter;delete c.ytId;delete c.ytSecret;delete c.ytKey;localStorage.setItem('cf',JSON.stringify(c))}catch(e){}try{if(window.AndroidBridge){AndroidBridge.setSecret('groq',cfg.groq||'');AndroidBridge.setSecret('gemini',cfg.gemini||'');AndroidBridge.setSecret('openrouter',cfg.openrouter||'');AndroidBridge.setSecret('yt_id',cfg.ytId||'');AndroidBridge.setSecret('yt_secret',cfg.ytSecret||'');AndroidBridge.setSecret('ytKey',cfg.ytKey||'')}}catch(e){}};
 try{if(window.AndroidBridge){const k=AndroidBridge.getSecret('groq'),g=AndroidBridge.getSecret('gemini'),orK=AndroidBridge.getSecret('openrouter');if(k)cfg.groq=k;if(g)cfg.gemini=g;if(orK)cfg.openrouter=orK;const yi=AndroidBridge.getSecret('yt_id'),ys=AndroidBridge.getSecret('yt_secret');if(yi)cfg.ytId=yi;if(ys)cfg.ytSecret=ys;const yk=AndroidBridge.getSecret('ytKey');if(yk)cfg.ytKey=yk;if((!k&&cfg.groq)||(!g&&cfg.gemini))persist();}else{delete cfg.groq;delete cfg.gemini;delete cfg.openrouter;delete cfg.ytId;delete cfg.ytSecret;delete cfg.ytKey}}catch(e){}
 const S={file:null,url:'',dur:0,clips:[],cues:[],tracks:[],sel:0,curve:[],busy:false,view:'import'};
