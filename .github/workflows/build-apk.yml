@@ -1,0 +1,119 @@
+name: Build Roohu ClipForge APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout buildnewapk
+        uses: actions/checkout@v4
+
+      - name: Check source files
+        run: |
+          set -e
+          for f in MainActivity.java AndroidManifest.xml activity_main.xml build-1.gradle Roohu-ClipForge.html validate.js motion.js clips.js; do
+            test -s "$f" || { echo "::error::Missing source file: $f"; exit 1; }
+          done
+          echo "Building repository: $GITHUB_REPOSITORY"
+          echo "Commit: $GITHUB_SHA"
+
+      - name: Prepare Android app structure
+        run: |
+          set -e
+          mkdir -p app/src/main/java/com/roohu/clipforge
+          mkdir -p app/src/main/assets
+          mkdir -p app/src/main/res/layout
+          mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/mipmap-anydpi-v26
+          cp ./*.java app/src/main/java/com/roohu/clipforge/
+          cp Roohu-ClipForge.html app/src/main/assets/Roohu-ClipForge.html
+          cp validate.js motion.js clips.js app/src/main/assets/
+          cp activity_main.xml app/src/main/res/layout/activity_main.xml
+          cp colors.xml strings.xml themes.xml app/src/main/res/values/
+          cp splash_bg.xml splash_glow.xml splash_logo.xml ic_launcher_foreground.xml app/src/main/res/drawable/
+          cp ic_launcher.xml app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          cp ic_launcher_round.xml app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          cp build-1.gradle app/build.gradle
+          test -s app/build.gradle
+          test -s app/src/main/assets/Roohu-ClipForge.html
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check validate.js
+          node --check motion.js
+          node --check clips.js
+
+      - name: Download offline speech models
+        run: |
+          set -e
+          mkdir -p app/src/main/assets
+          cd app/src/main/assets
+          curl -fL --retry 3 --retry-delay 2 -o en.zip https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip
+          unzip -q en.zip
+          mv vosk-model-small-en-us-0.15 model-en
+          rm en.zip
+          curl -fL --retry 3 --retry-delay 2 -o hi.zip https://alphacephei.com/vosk/models/vosk-model-small-hi-0.22.zip
+          unzip -q hi.zip
+          mv vosk-model-small-hi-0.22 model-hi
+          rm hi.zip
+          du -sh model-en model-hi
+
+      - name: Download optional caption fonts
+        continue-on-error: true
+        run: |
+          mkdir -p app/src/main/assets/fonts
+          cd app/src/main/assets/fonts
+          curl -fL --retry 2 -o Poppins-ExtraBold.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-ExtraBold.ttf || true
+          curl -fL --retry 2 -o Poppins-Black.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Black.ttf || true
+          curl -fL --retry 2 -o Anton-Regular.ttf https://raw.githubusercontent.com/google/fonts/main/ofl/anton/Anton-Regular.ttf || true
+          ls -lh || true
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build debug APK
+        run: gradle --no-daemon --stacktrace assembleDebug
+
+      - name: Verify APK
+        run: |
+          set -e
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          file "$APK"
+          unzip -t "$APK" >/dev/null
+          ls -lh "$APK"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Roohu-ClipForge-buildnewapk-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Show failure hint
+        if: failure()
+        run: echo "::error::Build failed in buildnewapk. Open the failed step logs; the first compiler or Gradle error is the important one."
