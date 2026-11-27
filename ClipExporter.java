@@ -209,7 +209,9 @@ final class ClipExporter {
             JSONArray cj = ramp != null ? ramp.mapCues(spec.optJSONArray("cues"), s) : spec.optJSONArray("cues");
             if (spec.optBoolean("capOn", true) && cj != null && cj.length() > 0) {
                 ov.add(new CaptionOverlay(ow, s, parseCues(cj), spec.optString("capStyle", "pop"),
-                        Painter.face(spec.optString("font", "")), spec.optBoolean("rtl", false), neon ? -0.62f : ("mark".equals(spec.optString("capStyle", "pop")) && !react ? 0.78f : -0.26f)));
+                        Painter.face(spec.optString("font", "")), spec.optBoolean("rtl", false),
+                        "top".equals(spec.optString("capPos", "bottom")) ? 0.78f : "center".equals(spec.optString("capPos", "bottom")) ? 0f : -0.26f,
+                        Math.max(0.7f, Math.min(1.3f, (float) spec.optDouble("capSize", 100) / 100f))));
             }
             ov.add(new NameOverlay(ow, (float) spec.optDouble("wmSize", 100), (float) spec.optDouble("wmOp", 90) / 100f,
                     spec.optString("wmPos", "mc"), react ? 1f - 0.20f : 0f));
@@ -585,7 +587,7 @@ final class ClipExporter {
             float a = (float) (t < 0.2 ? t / 0.2 : t > 3.6 ? Math.max(0, 1 - (t - 3.6) / 0.5) : 1);
             return new OverlaySettings.Builder()
                     .setBackgroundFrameAnchor(0f, cy).setOverlayFrameAnchor(0f, 0f)
-                    .setScale(sc, sc).setAlphaScale(a).build();
+                    .setScale(sc * sizeScale, sc * sizeScale).setAlphaScale(a).build();
         }
     }
 
@@ -627,11 +629,11 @@ final class ClipExporter {
         private final LruCache<Long, Bitmap> cache = new LruCache<>(24);
         private final Bitmap empty = Painter.transparent();
 
-        private final float anchorY;
+        private final float anchorY, sizeScale;
 
-        CaptionOverlay(int W, double clipStart, List<Painter.Cue> cues, String style, Typeface tf, boolean rtl, float anchorY) {
+        CaptionOverlay(int W, double clipStart, List<Painter.Cue> cues, String style, Typeface tf, boolean rtl, float anchorY, float sizeScale) {
             this.W = W; this.clipStart = clipStart; this.cues = cues; this.style = style; this.tf = tf; this.rtl = rtl;
-            this.anchorY = anchorY;
+            this.anchorY = anchorY; this.sizeScale = sizeScale;
         }
 
         private int cueAt(double t) {
