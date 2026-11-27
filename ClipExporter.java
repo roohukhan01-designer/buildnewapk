@@ -279,7 +279,7 @@ final class ClipExporter {
                             .build());
                 }
                 seqs.add(new EditedMediaItemSequence(ImmutableList.copyOf(shots)));
-                seqs.add(new EditedMediaItemSequence(ImmutableList.of(new EditedMediaItem.Builder(mi).setRemoveVideo(true).build())));
+                seqs.add(new EditedMediaItemSequence(ImmutableList.of(new EditedMediaItem.Builder(mi).setRemoveVideo(true).setEffects(new Effects(ImmutableList.<AudioProcessor>of(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, dur, false)), ImmutableList.<Effect>of())).build())));
             } else if (ramp != null) {
                 // Speed ramps: the clip is cut into segments, each with its own speed. Picture speed (SpeedChangeEffect) and sound
                 // speed (SonicAudioProcessor, keeps the voice pitch) change together. Overlays and the look run on the finished timeline.
@@ -290,15 +290,15 @@ final class ClipExporter {
                                     .setStartPositionMs((long) ((s + ramp.from[i]) * 1000)).setEndPositionMs((long) ((s + ramp.to[i]) * 1000)).build())
                             .build();
                     List<Effect> ve = new ArrayList<>(reframe(vw, vh, W, H, fill, cropX, track, ramp.from[i]));
-                    ImmutableList<AudioProcessor> ae = ImmutableList.<AudioProcessor>of();
+                    List<AudioProcessor> aeList = new ArrayList<>(); aeList.add(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, ramp.to[i] - ramp.from[i], false));
                     if (Math.abs(ramp.speed[i] - 1) > 0.01) {
                         ve.add(new SpeedChangeEffect((float) ramp.speed[i]));
                         SonicAudioProcessor so = new SonicAudioProcessor();
                         so.setSpeed((float) ramp.speed[i]);
-                        ae = ImmutableList.<AudioProcessor>of(so);
+                        aeList.add(so);
                     }
                     parts.add(new EditedMediaItem.Builder(gi)
-                            .setEffects(new Effects(ae, ImmutableList.copyOf(ve)))
+                            .setEffects(new Effects(ImmutableList.copyOf(aeList), ImmutableList.copyOf(ve)))
                             .setFrameRate(fps)
                             .build());
                 }
@@ -307,7 +307,7 @@ final class ClipExporter {
                 List<Effect> all = new ArrayList<>(pre);
                 all.addAll(fx);
                 EditedMediaItem video = new EditedMediaItem.Builder(mi)
-                        .setEffects(new Effects(ImmutableList.<AudioProcessor>of(), ImmutableList.copyOf(all)))
+                        .setEffects(new Effects(ImmutableList.<AudioProcessor>of(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, dur, false)), ImmutableList.copyOf(all)))
                         .setFrameRate(fps)
                         .build();
                 seqs.add(new EditedMediaItemSequence(ImmutableList.of(video)));
