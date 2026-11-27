@@ -298,7 +298,7 @@ document.addEventListener('visibilitychange',()=>{try{if(document.hidden&&!expor
 <details class="acc"><summary>Music</summary><div><label class="f">Music</label><select id="mu"></select></div></details>
 <div class="actions"><button id="ex1">Export this clip</button><button class="pri" id="tpost">Next: post →</button></div>
 </div></div>
-<div class="card"><div class="cap2" style="margin-top:0">Your clips on the video timeline</div><canvas class="curve" aria-label="Selected clips on the timeline"></canvas></div></div></section>
+<div class="card"><div class="cap2" style="margin-top:0">Audio waveform & clip timeline</div><p class="hint">Taller peaks mean louder audio. Orange blocks show your selected clips.</p><canvas class="curve" aria-label="Audio waveform with selected clips"></canvas><div class="row" style="justify-content:space-between;margin-top:7px"><span class="hint">Quiet</span><span class="hint">Loud</span><span class="hint">Video time</span></div></div></div></section>
 
 <section class="view" id="v-sub" hidden><h2>Caption editor</h2><p>Fix wording and timing. Every change goes straight into the exported clips.</p>
 <div class="card"><div class="row"><button id="sub-imp">Import .srt / .vtt</button><button id="sub-exp">Export .srt</button><button id="sub-add">Add line at playhead</button></div>
@@ -341,7 +341,7 @@ if(!cfg.v16){if(cfg.cap==='auto')cfg.cap='gold';if(cfg.font==='auto')cfg.font='P
 if(!cfg.v17){cfg.capSize=100;cfg.capPos='bottom';cfg.v17=1;try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}} if(!cfg.v18){cfg.srcVol=100;cfg.v18=1;try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}} if(!cfg.v19){cfg.musicFadeIn=0.5;cfg.musicFadeOut=1.6;cfg.v19=1;try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}} if(!cfg.v20){cfg.voiceEnhance=false;cfg.v20=1;try{localStorage.setItem('cf',JSON.stringify(cfg))}catch(e){}}
 const persist=()=>{try{const c=Object.assign({},cfg);delete c.groq;delete c.gemini;delete c.openrouter;delete c.ytId;delete c.ytSecret;delete c.ytKey;localStorage.setItem('cf',JSON.stringify(c))}catch(e){}try{if(window.AndroidBridge){AndroidBridge.setSecret('groq',cfg.groq||'');AndroidBridge.setSecret('gemini',cfg.gemini||'');AndroidBridge.setSecret('openrouter',cfg.openrouter||'');AndroidBridge.setSecret('yt_id',cfg.ytId||'');AndroidBridge.setSecret('yt_secret',cfg.ytSecret||'');AndroidBridge.setSecret('ytKey',cfg.ytKey||'')}}catch(e){}};
 try{if(window.AndroidBridge){const k=AndroidBridge.getSecret('groq'),g=AndroidBridge.getSecret('gemini'),orK=AndroidBridge.getSecret('openrouter');if(k)cfg.groq=k;if(g)cfg.gemini=g;if(orK)cfg.openrouter=orK;const yi=AndroidBridge.getSecret('yt_id'),ys=AndroidBridge.getSecret('yt_secret');if(yi)cfg.ytId=yi;if(ys)cfg.ytSecret=ys;const yk=AndroidBridge.getSecret('ytKey');if(yk)cfg.ytKey=yk;if((!k&&cfg.groq)||(!g&&cfg.gemini))persist();}else{delete cfg.groq;delete cfg.gemini;delete cfg.openrouter;delete cfg.ytId;delete cfg.ytSecret;delete cfg.ytKey}}catch(e){}
-const S={file:null,url:'',dur:0,clips:[],cues:[],tracks:[],sel:0,curve:[],busy:false,view:'import'};
+const S={file:null,url:'',dur:0,clips:[],cues:[],tracks:[],sel:0,curve:[],audioCurve:[],busy:false,view:'import'};
 const vid=document.createElement('video');vid.playsInline=true;vid.preload='auto';
 const toast=m=>{const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display='none',4500)};
 const seek=t=>new Promise(r=>{const h=()=>{vid.removeEventListener('seeked',h);r()};vid.addEventListener('seeked',h);vid.currentTime=t});
@@ -364,7 +364,7 @@ async function caps(){const c=[];const add=(n,s)=>c.push(`<span class="chip ${s}
  const aiOn=!!(NATIVE&&aiOk());add(aiOn?'AI titles and ratings ('+(cfg.aiProv==='openrouter'?'OpenRouter':cfg.aiProv==='both'?'Gemini or OpenRouter':'Gemini')+')':'AI titles: optional, add a free Gemini or OpenRouter key in Settings','');
  $('#caps').innerHTML=c.join('');$('#fm').textContent=NATIVE?'H.264 MP4 · 30 fps · saved to Gallery':(pickMime().split(';')[0]||'no encoder available')}
 /* import */
-const resetP=()=>{if(S.url)URL.revokeObjectURL(S.url);Object.assign(S,{clips:[],curve:[],sel:0});$('#tor').hidden=true};
+const resetP=()=>{if(S.url)URL.revokeObjectURL(S.url);Object.assign(S,{clips:[],curve:[],audioCurve:[],sel:0});$('#tor').hidden=true};
 $('#vf').onchange=async e=>{const f=e.target.files[0];if(!f)return;resetP();S.file=f;S.url=URL.createObjectURL(f);vid.src=S.url;$('#go').disabled=true;$('#auto').disabled=true;
  try{await new Promise((ok,no)=>{vid.onloadedmetadata=ok;vid.onerror=()=>no()});}catch{$('#vi').innerHTML='<div class="note">This browser can’t decode that file. Try an H.264 MP4 or a WebM.</div>';return}
  S.dur=vid.duration;if(!isFinite(S.dur)||S.dur<5){$('#vi').innerHTML='<div class="note">The video is too short or its length can’t be read (minimum 5 seconds).</div>';return}
@@ -497,7 +497,7 @@ async function aiScan(){const say=m=>$('#alog').textContent=m,dur=Math.floor(S.d
   (r.cues||[]).forEach(q=>cues.push(q));(r.energy||[]).forEach((v,i)=>{if(a+i<energy.length)energy[a+i]=v/1000})}
  if(badParts>=N&&lastErr)throw lastErr;
  if(badParts)toast(badParts+' part'+(badParts===1?'':'s')+' of the video could not be read and '+(badParts===1?'was':'were')+' skipped.');
- S.cues=cues.sort((p,q)=>p.a-q.a);S.curve=Array.from(nz(energy.slice(0,dur)));
+ S.cues=cues.sort((p,q)=>p.a-q.a);S.audioCurve=Array.from(nz(energy.slice(0,dur)));S.curve=S.audioCurve.slice();
  step('aud','ok','Listened to the whole video: '+cues.length+' lines');
  if(!cues.length)throw new Error('The AI heard no speech. Check the spoken language in Settings.');
  const en=nz(energy),loud=(a,b)=>{const v=[];for(let i=Math.floor(a);i<Math.min(b,dur);i++)v.push([i,en[i]]);v.sort((p,q)=>q[1]-p[1]);const out=[];for(const[i]of v){if(out.every(o=>Math.abs(o-i)>8))out.push(i);if(out.length>=10)break}return out.sort((p,q)=>p-q).map(hms)};
@@ -568,7 +568,7 @@ $('#go').onclick=async()=>{if(S.busy||!S.file)return;
   for(let k=0;k<M;k++){$('#alog').textContent='Scanning motion '+(k+1)+' / '+M;await seek(Math.min(dur-.1,(k+.5)*dur/M));x.drawImage(vid,0,0,64,36);const f=x.getImageData(0,0,64,36).data;
    if(prev){let s=0,sx=0;for(let p=0;p<f.length;p+=4){const dd=Math.abs(f[p]-prev[p])+Math.abs(f[p+1]-prev[p+1])+Math.abs(f[p+2]-prev[p+2]);s+=dd;sx+=dd*((p/4)%64)}mot[k]=s;cx[k]=s?sx/s/31.5-1:0}prev=f;bar(.2+.7*k/M)}
   step('mot','ok','Motion scan: done');step('rank','run');
-  const Mo=nz(mot),mb=i=>Math.min(M-1,Math.floor(i/dur*M)),sc=[],V=[];
+  S.audioCurve=A?Array.from(A):[];const Mo=nz(mot),mb=i=>Math.min(M-1,Math.floor(i/dur*M)),sc=[],V=[];
   for(let i=0;i<bins;i++){V[i]=A&&i?Math.abs(A[i]-A[i-1]):0}const Vn=nz(V);
   for(let i=0;i<bins;i++)sc[i]=A?.5*A[i]+.2*Vn[i]+.3*Mo[mb(i)]:Mo[mb(i)];
   const sm=sc.map((v,i)=>(sc[i-1]??v)*.25+v*.5+(sc[i+1]??v)*.25);S.curve=sm;
@@ -581,9 +581,10 @@ $('#go').onclick=async()=>{if(S.busy||!S.file)return;
   step('rank','ok','Ranking clips: '+S.clips.length+' selected');bar(1);$('#alog').textContent=S.clips.length?'Done. Clips are ranked by score; reframing starts where the most motion happens.':'No clips could be selected.';S.sel=0;$('#tor').hidden=!S.clips.length;drawCurve();if(cfg.autoCap&&S.clips.length)await runCap(S.clips.map((_,i)=>i))
  }catch(e){$('#alog').textContent='Analysis failed: '+(e.message||e)+'. Try a different file.'}finally{S.busy=false}};
 $('#tor').onclick=()=>go('review');
-function drawCurve(){$$('canvas.curve').forEach(c=>{const d=devicePixelRatio||1,W=c.width=c.clientWidth*d,H=c.height=c.clientHeight*d,x=c.getContext('2d');x.clearRect(0,0,W,H);if(!S.curve.length)return;const n=S.curve.length,bw=W/n;
- S.clips.forEach((k,i)=>{x.fillStyle=i===S.sel?'rgba(255,143,63,.35)':'rgba(255,143,63,.14)';x.fillRect(k.s*bw,0,(k.e-k.s)*bw,H)});
- x.fillStyle='#5FA9B5';S.curve.forEach((v,i)=>{const h=Math.max(2,v*(H-8));x.fillRect(i*bw,H-h,Math.max(1,bw-.5),h)})})}
+function drawCurve(){$('canvas.curve').forEach(c=>{const d=window.devicePixelRatio||1,W=c.width=Math.max(1,c.clientWidth*d),H=c.height=Math.max(1,c.clientHeight*d),x=c.getContext('2d');x.clearRect(0,0,W,H);const data=S.audioCurve.length?S.audioCurve:S.curve;if(!data.length)return;const n=data.length,bw=W/n,mid=H/2;
+ S.clips.forEach((k,i)=>{x.fillStyle=i===S.sel?'rgba(255,143,63,.20)':'rgba(255,143,63,.09)';x.fillRect(k.s*bw,0,Math.max(1,(k.e-k.s)*bw),H)});
+ x.strokeStyle='rgba(255,255,255,.18)';x.lineWidth=Math.max(1,d);x.beginPath();x.moveTo(0,mid);x.lineTo(W,mid);x.stroke();
+ x.fillStyle='#5FA9B5';data.forEach((v,i)=>{const amp=Math.max(1,Math.min(H*.46,v*(H*.46))),px=i*bw+Math.max(0,bw*.5);x.fillRect(px,mid-amp,Math.max(1,bw*.72),amp);x.fillRect(px,mid,Math.max(1,bw*.72),amp)})})}
 addEventListener('resize',drawCurve);
 /* audio graph */
 let AC,vg,mg,mon,dest,an,abuf,duckV=1;const level=()=>{if(!an)return 0;an.getByteTimeDomainData(abuf);let s=0;for(const v of abuf){const d=(v-128)/128;s+=d*d}return Math.sqrt(s/abuf.length)};const mel=new Audio();mel.loop=true;
