@@ -43,13 +43,23 @@ final class MediaCache {
                 if (!c.isNull(1)) size = c.getLong(1);
             }
         } catch (Exception ignored) { }
-        String ext = ".media";
+        String ext = ".mp4"; // fallback for providers that omit a file extension
         if (name != null) {
             int dot = name.lastIndexOf('.');
             if (dot >= 0 && dot < name.length() - 1) {
                 String cand = name.substring(dot).toLowerCase(Locale.US);
                 if (cand.matches("\\.[a-z0-9]{1,8}")) ext = cand;
             }
+        }
+        // Preserve the actual container when a cloud/document provider supplies MIME but no extension.
+        if (".mp4".equals(ext) || ".media".equals(ext)) {
+            String mime = null;
+            try { mime = ctx.getContentResolver().getType(uri); } catch (Exception ignored) { }
+            if ("video/quicktime".equals(mime)) ext = ".mov";
+            else if ("video/webm".equals(mime)) ext = ".webm";
+            else if ("video/x-matroska".equals(mime)) ext = ".mkv";
+            else if ("video/3gpp".equals(mime) || "video/3gpp2".equals(mime)) ext = ".3gp";
+            else if ("video/mp4".equals(mime)) ext = ".mp4";
         }
         File dir = dir(ctx);
         if (!dir.isDirectory()) throw new IOException("Cannot create the media cache folder.");
