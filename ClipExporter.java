@@ -802,7 +802,7 @@ final class ClipExporter {
 
         /** speech == null: unknown (no ducking). empty array: the clip has no voice, so the music plays a bit louder. */
         private final boolean fades;
-        private final float fadeInSeconds, fadeOutSeconds;
+        private float fadeInSeconds, fadeOutSeconds;
 
         GainProcessor(float gain, double[] speech, double total) { this(gain, speech, total, 0.5f, 1.6f); }
 
