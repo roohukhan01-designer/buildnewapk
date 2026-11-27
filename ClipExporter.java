@@ -80,6 +80,33 @@ final class ClipExporter {
     private boolean finished;
     private Listener listener;   // kept so cancel() can tell the page; otherwise the page waits forever and Export stays disabled
 
+    /** Explicit container MIME helps Media3 load picker-copied file URIs reliably. */
+    private static MediaItem.Builder mediaItemBuilder(Context ctx, Uri uri) {
+        MediaItem.Builder b = new MediaItem.Builder().setUri(uri);
+        String mime = null;
+        try { mime = ctx.getContentResolver().getType(uri); } catch (Exception ignored) { }
+        if (mime == null || mime.isEmpty()) {
+            String path = uri == null ? "" : uri.getLastPathSegment();
+            String ext = "";
+            if (path != null) {
+                int dot = path.lastIndexOf('.');
+                if (dot >= 0) ext = path.substring(dot + 1).toLowerCase(java.util.Locale.US);
+            }
+            if ("mp4".equals(ext) || "m4v".equals(ext) || "media".equals(ext) || ext.isEmpty()) mime = "video/mp4";
+            else if ("mov".equals(ext) || "qt".equals(ext)) mime = "video/quicktime";
+            else if ("webm".equals(ext)) mime = "video/webm";
+            else if ("mkv".equals(ext)) mime = "video/x-matroska";
+            else if ("3gp".equals(ext)) mime = "video/3gpp";
+            else if ("mp3".equals(ext)) mime = "audio/mpeg";
+            else if ("m4a".equals(ext) || "aac".equals(ext)) mime = "audio/mp4";
+            else if ("wav".equals(ext)) mime = "audio/wav";
+            else if ("ogg".equals(ext) || "opus".equals(ext)) mime = "audio/ogg";
+            else if ("flac".equals(ext)) mime = "audio/flac";
+        }
+        if (mime != null && !mime.isEmpty()) b.setMimeType(mime);
+        return b;
+    }
+
     /** Must be called on the main thread. musicUri may be null. */
     void start(final Context ctx, Uri src, JSONObject spec, Uri musicUri, Uri camUri, final Listener l) {
         listener = l;
@@ -201,7 +228,7 @@ final class ClipExporter {
                 });
             }
 
-            MediaItem mi = new MediaItem.Builder().setUri(src)
+            MediaItem mi = mediaItemBuilder(ctx, src)
                     .setClippingConfiguration(new MediaItem.ClippingConfiguration.Builder()
                             .setStartPositionMs((long) (s * 1000)).setEndPositionMs((long) (e * 1000)).build())
                     .build();
@@ -221,7 +248,7 @@ final class ClipExporter {
                     boolean isCam = g[2] > 0;
                     double a = isCam ? g[3] : s + g[0];
                     double b = a + (g[1] - g[0]);
-                    MediaItem gi = new MediaItem.Builder().setUri(isCam ? camUri : src)
+                    MediaItem gi = mediaItemBuilder(ctx, isCam ? camUri : src)
                             .setClippingConfiguration(new MediaItem.ClippingConfiguration.Builder()
                                     .setStartPositionMs((long) (a * 1000)).setEndPositionMs((long) (b * 1000)).build())
                             .build();
@@ -238,7 +265,7 @@ final class ClipExporter {
                 // speed (SonicAudioProcessor, keeps the voice pitch) change together. Overlays and the look run on the finished timeline.
                 List<EditedMediaItem> parts = new ArrayList<>();
                 for (int i = 0; i < ramp.count(); i++) {
-                    MediaItem gi = new MediaItem.Builder().setUri(src)
+                    MediaItem gi = mediaItemBuilder(ctx, src)
                             .setClippingConfiguration(new MediaItem.ClippingConfiguration.Builder()
                                     .setStartPositionMs((long) ((s + ramp.from[i]) * 1000)).setEndPositionMs((long) ((s + ramp.to[i]) * 1000)).build())
                             .build();
@@ -266,7 +293,7 @@ final class ClipExporter {
                 seqs.add(new EditedMediaItemSequence(ImmutableList.of(video)));
             }
             if (musicUri != null) {
-                MediaItem mm = new MediaItem.Builder().setUri(musicUri)
+                MediaItem mm = mediaItemBuilder(ctx, musicUri)
                         .setClippingConfiguration(new MediaItem.ClippingConfiguration.Builder()
                                 .setStartPositionMs(0).setEndPositionMs((long) (dur * 1000)).build())
                         .build();
@@ -292,7 +319,7 @@ final class ClipExporter {
                 try {
                     File sf = new File(ctx.getCacheDir(), "sfx_" + Integer.toHexString(sfx.toString().hashCode()) + "_" + (int) (dur * 10) + ".wav");
                     if (!sf.exists()) Sfx.generate(sf, dur, sfx);
-                    MediaItem sm = new MediaItem.Builder().setUri(Uri.fromFile(sf))
+                    MediaItem sm = mediaItemBuilder(ctx, Uri.fromFile(sf))
                             .setClippingConfiguration(new MediaItem.ClippingConfiguration.Builder()
                                     .setStartPositionMs(0).setEndPositionMs((long) (dur * 1000)).build()).build();
                     EditedMediaItem sfxItem = new EditedMediaItem.Builder(sm)
