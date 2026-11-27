@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg">
+
+    <WebView android:id="@+id/web" android:layout_width="match_parent" android:layout_height="match_parent"/>
+
+    <FrameLayout android:id="@+id/splash" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="@drawable/splash_bg" android:clickable="true" android:focusable="true">
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_gravity="center" android:orientation="vertical" android:gravity="center_horizontal">
+            <FrameLayout android:layout_width="220dp" android:layout_height="220dp">
+                <View android:id="@+id/glow" android:layout_width="match_parent" android:layout_height="match_parent"
+                    android:background="@drawable/splash_glow"/>
+                <ImageView android:id="@+id/logo" android:layout_width="132dp" android:layout_height="132dp"
+                    android:layout_gravity="center" android:src="@drawable/splash_logo"
+                    android:contentDescription="Roohu ClipForge"/>
+            </FrameLayout>
+            <TextView android:id="@+id/title" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="ROOHU CLIPFORGE" android:textColor="@color/text" android:textSize="22sp"
+                android:textStyle="bold" android:letterSpacing="0.28"/>
+            <TextView android:id="@+id/tag" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="6dp" android:text="AI short-form studio"
+                android:textColor="@color/muted" android:textSize="13sp" android:letterSpacing="0.08"/>
+            <ProgressBar android:id="@+id/loader" style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="140dp" android:layout_height="4dp" android:layout_marginTop="36dp"
+                android:indeterminate="true" android:indeterminateTint="@color/amber"/>
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>
