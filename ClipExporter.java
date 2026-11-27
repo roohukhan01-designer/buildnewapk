@@ -279,7 +279,7 @@ final class ClipExporter {
                             .build());
                 }
                 seqs.add(new EditedMediaItemSequence(ImmutableList.copyOf(shots)));
-                seqs.add(new EditedMediaItemSequence(ImmutableList.of(new EditedMediaItem.Builder(mi).setRemoveVideo(true).setEffects(new Effects(ImmutableList.<AudioProcessor>of(new GainProcessor((float) Math.max(0, Math.min(1.5, spec.optDouble("srcVol", 100) / 100.0)), null, dur, false), spec.optBoolean("voiceEnhance", false) ? new VoiceClarityProcessor() : null), ImmutableList.<Effect>of())).build())));
+                seqs.add(new EditedMediaItemSequence(ImmutableList.of(new EditedMediaItem.Builder(mi).setRemoveVideo(true).setEffects(new Effects(ImmutableList.copyOf(sourceAudioProcessors(spec, dur)), ImmutableList.<Effect>of())).build())));
             } else if (ramp != null) {
                 // Speed ramps: the clip is cut into segments, each with its own speed. Picture speed (SpeedChangeEffect) and sound
                 // speed (SonicAudioProcessor, keeps the voice pitch) change together. Overlays and the look run on the finished timeline.
