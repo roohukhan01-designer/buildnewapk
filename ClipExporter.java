@@ -850,8 +850,8 @@ final class ClipExporter {
                 float fade = 1f;
                 if (fades) {
                     double in = fadeInSeconds <= 0f ? 1.0 : tt / fadeInSeconds;
-                    double out = fadeOutSeconds <= 0f ? 1.0 : Math.max(0, total - tt) / fadeOutSeconds;
-                    fade = (float) Math.max(0.0, Math.min(1.0, Math.min(in, out)));
+                    double fadeOutRatio = fadeOutSeconds <= 0f ? 1.0 : Math.max(0, total - tt) / fadeOutSeconds;
+                    fade = (float) Math.max(0.0, Math.min(1.0, Math.min(in, fadeOutRatio)));
                 }
                 float g = gain * env * fade;
                 for (int c = 0; c < ch; c++) {
