@@ -80,6 +80,20 @@ final class ClipExporter {
     private boolean finished;
     private Listener listener;   // kept so cancel() can tell the page; otherwise the page waits forever and Export stays disabled
 
+    /** Confirm that a localized source is a real, non-empty readable file before Media3 creates an AssetLoader. */
+    private static void requireReadableVideo(Uri uri, String label) throws IOException {
+        if (uri == null) throw new IOException("No " + label + " was selected.");
+        if (!"file".equalsIgnoreCase(uri.getScheme())) {
+            throw new IOException("The " + label + " was not copied into app storage. Please select it again.");
+        }
+        String path = uri.getPath();
+        if (path == null || path.trim().isEmpty()) throw new IOException("The " + label + " has no readable file path. Select it again.");
+        File f = new File(path);
+        if (!f.exists()) throw new IOException("The " + label + " is no longer available in app storage. Select it again.");
+        if (!f.isFile() || !f.canRead()) throw new IOException("ClipForge cannot read the " + label + ". Check available storage and select it again.");
+        if (f.length() <= 0) throw new IOException("The " + label + " is empty. Choose another copy of the video.");
+    }
+
     /** Explicit container MIME helps Media3 load picker-copied file URIs reliably. */
     private static MediaItem.Builder mediaItemBuilder(Context ctx, Uri uri) {
         MediaItem.Builder b = new MediaItem.Builder().setUri(uri);
@@ -134,15 +148,29 @@ final class ClipExporter {
             final double[] pk = withCuts(punchIn, cut ? segs : null);
             final double[][] track = spec.optBoolean("follow", true) ? readTrack(spec.optJSONArray("track")) : null;   // face tracking (M24)
 
+            // Media3's AssetLoader fails with a vague message when the picker URI is stale,
+            // the private cache copy is empty, or the file cannot be read. Fail before building
+            // the composition so the user gets a useful, actionable error instead.
+            requireReadableVideo(src, "selected video");
+            if (camUri != null && spec.optBoolean("cut", false)) requireReadableVideo(camUri, "face-camera video");
+
             int vw = 0, vh = 0, rot = 0;
             MediaMetadataRetriever r = new MediaMetadataRetriever();
             try {
                 r.setDataSource(ctx, src);
-                vw = Integer.parseInt(r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
-                vh = Integer.parseInt(r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+                String width = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+                String height = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+                if (width == null || height == null) throw new IOException("The selected file has no readable video track. Choose a normal video file, such as MP4.");
+                vw = Integer.parseInt(width);
+                vh = Integer.parseInt(height);
                 String ro = r.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION);
                 rot = ro == null ? 0 : Integer.parseInt(ro);
-            } finally { r.release(); }
+                if (vw < 1 || vh < 1) throw new IOException("The video dimensions could not be read. The file may be damaged or use an unsupported codec.");
+            } catch (IOException e) {
+                throw e;
+            } catch (RuntimeException e) {
+                throw new IOException("Android could not open the selected video. Try saving it as an H.264 MP4 and import it again.", e);
+            } finally { try { r.release(); } catch (Exception ignored) { } }
             if (rot == 90 || rot == 270) { int t = vw; vw = vh; vh = t; }
 
             final boolean fill = react || !"fit".equals(spec.optString("mode", "fill"));
@@ -363,7 +391,8 @@ final class ClipExporter {
                     .addListener(new Transformer.Listener() {
                         @Override public void onCompleted(Composition c, ExportResult r) { finish(null, l); }
                         @Override public void onError(Composition c, ExportResult r, ExportException ex) {
-                            finish(ex.getMessage() == null ? ex.toString() : ex.getMessage(), l);
+                            // ExportException.getMessage() often hides the AssetLoader/decoder cause.
+                            finish(Diag.describe(ex), l);
                         }
                     })
                     .build();
@@ -372,7 +401,7 @@ final class ClipExporter {
             transformer.start(composition, out.getAbsolutePath());
             poll(l);
         } catch (Throwable t) {
-            finish(t.getMessage() == null ? t.toString() : t.getMessage(), l);
+            finish(Diag.describe(t), l);
         }
     }
 
@@ -531,8 +560,11 @@ final class ClipExporter {
         if (finished) return;
         finished = true;
         h.removeCallbacksAndMessages(null);
-        if (err == null && outFile != null && outFile.length() > 0) l.done(outFile);
-        else l.error(err == null ? "The encoder produced an empty file." : err);
+        if (err == null && outFile != null && outFile.isFile() && outFile.canRead() && outFile.length() > 0) l.done(outFile);
+        else {
+            if (outFile != null && outFile.exists()) outFile.delete();
+            l.error(err == null ? "The video encoder finished without creating a readable MP4. Try a shorter clip or a lower resolution." : err);
+        }
     }
 
     private void poll(final Listener l) {
