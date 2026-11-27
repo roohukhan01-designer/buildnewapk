@@ -167,9 +167,11 @@ final class ClipExporter {
                 if (gradeContrast != 0f) fx.add(new Contrast(gradeContrast * gradeMix));
                 if (gradeBrightness != 0f) fx.add(new Brightness(gradeBrightness * gradeMix));
                 if (gradeSaturation != 0f) fx.add(new HslAdjustment.Builder().adjustSaturation(gradeSaturation * gradeMix).build());
+                if ("warm".equals(grade)) fx.add((RgbMatrix) (pts, hdr) -> new float[]{1f + .06f * gradeMix,0,0,0, 0,1f + .01f * gradeMix,0,0, 0,0,1f - .08f * gradeMix,0, 0,0,0,1});
+                else if ("cool".equals(grade) || "teal".equals(grade)) fx.add((RgbMatrix) (pts, hdr) -> new float[]{1f - .05f * gradeMix,0,0,0, 0,1f,0,0, 0,0,1f + .07f * gradeMix,0, 0,0,0,1});
             }
-            // Keep the existing automatic enhancement as an independent optional effect.
-            if (spec.optBoolean("enh", true)) {
+            // Older clients without a grade field keep their original auto-enhance look.
+            if (spec.optBoolean("enh", true) && !spec.has("grade")) {
                 fx.add(new Contrast(neon ? 0.22f : 0.12f));
                 fx.add(new Brightness(0.02f));
                 fx.add(new HslAdjustment.Builder().adjustSaturation(neon ? 38f : 18f).build());
