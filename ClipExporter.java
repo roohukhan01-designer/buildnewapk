@@ -329,7 +329,7 @@ final class ClipExporter {
                 }
                 EditedMediaItem music = new EditedMediaItem.Builder(mm)
                         .setRemoveVideo(true)
-                        .setEffects(new Effects(ImmutableList.<AudioProcessor>of(new GainProcessor(vol, voice, dur)), ImmutableList.<Effect>of()))
+                        .setEffects(new Effects(ImmutableList.<AudioProcessor>of(new GainProcessor(vol, voice, dur, (float) Math.max(0, Math.min(3, spec.optDouble("musicFadeIn", 0.5))), (float) Math.max(0, Math.min(5, spec.optDouble("musicFadeOut", 1.6))))), ImmutableList.<Effect>of()))
                         .build();
                 seqs.add(new EditedMediaItemSequence(ImmutableList.of(music)));
             }
@@ -802,11 +802,20 @@ final class ClipExporter {
 
         /** speech == null: unknown (no ducking). empty array: the clip has no voice, so the music plays a bit louder. */
         private final boolean fades;
+        private final float fadeInSeconds, fadeOutSeconds;
 
-        GainProcessor(float gain, double[] speech, double total) { this(gain, speech, total, true); }
+        GainProcessor(float gain, double[] speech, double total) { this(gain, speech, total, 0.5f, 1.6f); }
+
+        GainProcessor(float gain, double[] speech, double total, float fadeInSeconds, float fadeOutSeconds) {
+            this(gain, speech, total, true);
+            this.fadeInSeconds = Math.max(0f, fadeInSeconds);
+            this.fadeOutSeconds = Math.max(0f, fadeOutSeconds);
+        }
 
         GainProcessor(float gain, double[] speech, double total, boolean fades) {
             this.fades = fades;
+            this.fadeInSeconds = 0.5f;
+            this.fadeOutSeconds = 1.6f;
             boolean none = speech != null && speech.length == 0;
             this.gain = none ? Math.min(1f, gain * 1.5f) : gain;
             this.speech = speech == null || speech.length == 0 ? null : speech;
@@ -838,7 +847,12 @@ final class ClipExporter {
                 }
                 env += (target - env) * (target < env ? atk : rel);
                 double tt = frame / (double) sr;
-                float fade = fades ? (float) Math.min(1.0, Math.min(tt / FADE_IN, Math.max(0, total - tt) / FADE_OUT)) : 1f;
+                float fade = 1f;
+                if (fades) {
+                    double in = fadeInSeconds <= 0f ? 1.0 : tt / fadeInSeconds;
+                    double out = fadeOutSeconds <= 0f ? 1.0 : Math.max(0, total - tt) / fadeOutSeconds;
+                    fade = (float) Math.max(0.0, Math.min(1.0, Math.min(in, out)));
+                }
                 float g = gain * env * fade;
                 for (int c = 0; c < ch; c++) {
                     int v = Math.round(input.getShort() * g);
