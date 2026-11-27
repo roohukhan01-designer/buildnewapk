@@ -510,29 +510,30 @@ async function aiScan(){const say=m=>$('#alog').textContent=m,dur=Math.floor(S.d
    (Array.isArray(o)?o:[]).forEach(m=>{if(!m||typeof m!=='object')return;const[u0,u1]=RoohuClips.unrelative(m.start,m.end,a,b-a),f=RoohuClips.fitWindow(u0,u1,dur,15,maxLen);if(f)cand.push({s:f[0],e:f[1],hook:String(m.hook||''),score:+m.score||5,why:String(m.why||'')})})}catch(e){if(/daily limit/i.test(String(e&&e.message||e)))throw e;say('AI skipped one part: '+(e.message||e))}}
  if(!cand.length)throw new Error('The AI found no strong moments. Try a different video.');
  step('mot','ok','AI found '+cand.length+' transcript candidates');step('rank','run');bar(.80);
- /* Phase 2: verify the strongest transcript candidates against real video frames.
-    Only selected JPEG frames and transcript text are sent; never the full video/audio. */
- const visualPool=cand.map((m,i)=>Object.assign(m,{id:i})).sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,8);
+ /* Phase 2 upgrade: compare a short sequence from each strong candidate.
+    Three selected JPEG frames per candidate are sent; never the full video/audio. */
+ const visualPool=cand.map((m,i)=>Object.assign(m,{id:i})).sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,6);
  try{
-  say('Checking what is actually visible in the strongest moments…');
-  const frameTimes=visualPool.map(m=>+((m.s+m.e)/2).toFixed(2));
+  say('Checking three moments inside each strong clip…');
+  const frameMap=visualPool.map(m=>[.2,.5,.8].map(f=>+((m.s+(m.e-m.s)*f).toFixed(2))));
+  const frameTimes=frameMap.flat();
   const frameResult=await cfNative.call(s=>AndroidBridge.frames(s),{times:frameTimes});
-  const visualFrames=(frameResult.frames||[]).filter(x=>typeof x==='string'&&x.length>100);
-  if(visualFrames.length===visualPool.length){
-   const VIS_SYS='You are a careful video evidence reviewer. Each supplied image matches the candidate with the same index, in order. Review only what is visibly present. Do not invent objects, people, actions, locations, identities or events. If a frame is insufficient, set visualConfidence to 0 and do not guess. Return one result per candidate: id, visualSummary (literal visible facts, max 18 words), visualMatch (true only when the frame clearly supports the transcript topic), visualConfidence (0 to 1), betterHook (max 6 words, only if directly supported; otherwise empty), visualReason (short factual reason).';
+  const visualFrames=frameResult.frames||[];
+  if(visualFrames.length===frameTimes.length&&visualFrames.every(x=>typeof x==='string'&&x.length>100)){
+   const VIS_SYS='You are a careful video-sequence evidence reviewer. The images arrive in groups of three, in candidate order: first image is early, second is middle, third is late in that candidate. Review the sequence, not just one still. Describe only visible facts and changes clearly shown across these images. Do not invent objects, people, actions, locations, identities or events. A few still frames cannot prove continuous motion; say so when needed. Return one result per candidate: id, visualSummary (literal visible facts and any clear change, max 24 words), visualMatch (true only when the sequence clearly supports the transcript topic), visualConfidence (0 to 1), betterHook (max 6 words, only if directly supported; otherwise empty), visualReason (short factual reason). If evidence is unclear, use confidence 0 and visualMatch false.';
    const VIS_SCHEMA={type:'array',items:{type:'object',properties:{id:{type:'integer'},visualSummary:{type:'string'},visualMatch:{type:'boolean'},visualConfidence:{type:'number'},betterHook:{type:'string'},visualReason:{type:'string'}},required:['id','visualSummary','visualMatch','visualConfidence','betterHook','visualReason']}};
-   const visualInput=visualPool.map(m=>({id:m.id,start:hms(m.s),end:hms(m.e),transcript:m.hook,context:S.cues.filter(q=>q.b>m.s&&q.a<m.e).map(q=>q.t).join(' ').slice(0,500)}));
-   const checked=await withRetry(()=>cfNative.call(s=>AndroidBridge.gemini(s),{prov:cfg.aiProv||'gemini',orModel:cfg.orModel||'auto',system:VIS_SYS,user:JSON.stringify({instruction:'Image order matches candidate id order. Judge only the evidence in each frame.',candidates:visualInput}),schema:VIS_SCHEMA,images:visualFrames}).then(r=>jparse(r.text)),say);
+   const visualInput=visualPool.map((m,i)=>({id:m.id,frameIndexes:[i*3,i*3+1,i*3+2],frameTimes:frameMap[i],start:hms(m.s),end:hms(m.e),transcript:m.hook,context:S.cues.filter(q=>q.b>m.s&&q.a<m.e).map(q=>q.t).join(' ').slice(0,500)}));
+   const checked=await withRetry(()=>cfNative.call(s=>AndroidBridge.gemini(s),{prov:cfg.aiProv||'gemini',orModel:cfg.orModel||'auto',system:VIS_SYS,user:JSON.stringify({instruction:'Each candidate has exactly three images. Use frameIndexes to match each group. Judge only visible evidence.',candidates:visualInput}),schema:VIS_SCHEMA,images:visualFrames}).then(r=>jparse(r.text)),say);
    if(Array.isArray(checked))checked.forEach(v=>{
-    const m=cand.find(x=>x.id===+v.id);if(!m)return;
+    const m=visualPool.find(x=>x.id===+v.id);if(!m)return;
     const confidence=Math.max(0,Math.min(1,+v.visualConfidence||0));
-    m.visualSummary=String(v.visualSummary||'').slice(0,180);m.visualMatch=v.visualMatch===true;m.visualConfidence=confidence;
+    m.visualSummary=String(v.visualSummary||'').slice(0,220);m.visualMatch=v.visualMatch===true;m.visualConfidence=confidence;
     m.visualReason=String(v.visualReason||'').slice(0,180);
     if(m.visualMatch&&confidence>=.65){m.score=Math.min(10,(+m.score||5)*.72+confidence*10*.28);if(v.betterHook&&String(v.betterHook).trim())m.visualHook=String(v.betterHook).trim().slice(0,60)}
     else if(v.visualMatch===false&&confidence>=.8)m.score=Math.max(1,(+m.score||5)*.82);
    });
-   say('Visual check complete. The AI compared '+checked.length+' candidate frames with their speech.');
-  }else say('Visual check skipped: some video frames could not be read. Transcript analysis will continue.');
+   say('Visual sequence check complete. The AI compared '+(checked.length||0)+' candidates using up to three frames each.');
+  }else say('Visual check skipped: the phone could not read all selected frames. Transcript analysis will continue.');
  }catch(ve){say('Visual check unavailable; keeping transcript results. '+(ve.message||ve))}
  const withE=cand.map((m,i)=>{let s=0,c=0;for(let t=Math.floor(m.s);t<Math.min(m.e,dur);t++){s+=en[t];c++}return Object.assign(m,{id:i,energy:c?+(s/c).toFixed(2):0,text:S.cues.filter(q=>q.b>m.s&&q.a<m.e).map(q=>q.t).join(' ').slice(0,700),visual:m.visualSummary||'',visualReason:m.visualReason||'',visualConfidence:m.visualConfidence||0})});
  const want=Math.max(1,+cfg.n||5);say('AI is choosing the best '+want+' and planning each edit…');
