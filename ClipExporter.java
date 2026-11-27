@@ -587,7 +587,7 @@ final class ClipExporter {
             float a = (float) (t < 0.2 ? t / 0.2 : t > 3.6 ? Math.max(0, 1 - (t - 3.6) / 0.5) : 1);
             return new OverlaySettings.Builder()
                     .setBackgroundFrameAnchor(0f, cy).setOverlayFrameAnchor(0f, 0f)
-                    .setScale(sc * sizeScale, sc * sizeScale).setAlphaScale(a).build();
+                    .setScale(sc, sc).setAlphaScale(a).build();
         }
     }
 
@@ -678,7 +678,7 @@ final class ClipExporter {
             }
             return new OverlaySettings.Builder()
                     .setBackgroundFrameAnchor(0f, anchorY).setOverlayFrameAnchor(0f, 1f)
-                    .setScale(sc, sc).setAlphaScale(a).build();
+                    .setScale(sc * sizeScale, sc * sizeScale).setAlphaScale(a).build();
         }
     }
 
